@@ -1,0 +1,13 @@
+import { chromium } from "@playwright/test";
+const browser = await chromium.launch({ headless: true });
+const page = await browser.newPage();
+page.on("console", (message) => { if (["error", "warning"].includes(message.type())) console.log("CONSOLE", message.type(), message.text()); });
+page.on("pageerror", (error) => console.log("PAGEERROR", error.message));
+page.on("requestfailed", (request) => console.log("FAILED", request.url(), request.failure()?.errorText));
+await page.goto("http://localhost:3000/alerts/new");
+await page.waitForTimeout(3000);
+console.log("SCRIPTS", await page.locator("script").evaluateAll((nodes) => nodes.map((node) => node.getAttribute("src") || node.getAttribute("type") || "inline")));
+console.log("RESOURCES", await page.evaluate(() => performance.getEntriesByType("resource").map((entry) => entry.name).filter((name) => name.includes("alert-form") || name.includes("react-hook") || name.includes("@hookform") || name.includes("zod"))));
+console.log("FORM_KEYS", await page.locator("form").evaluate((form) => Object.keys(form).filter((key) => key.startsWith("__react"))));
+console.log("INPUT_KEYS", await page.getByRole("spinbutton", { name: /Maksymalna cena/ }).evaluate((input) => Object.keys(input).filter((key) => key.startsWith("__react"))));
+await browser.close();

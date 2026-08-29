@@ -1,0 +1,4 @@
+import { ArrowLeft, BellRing, Smartphone } from "lucide-react";
+import Link from "next/link";
+import { EnablePushBanner } from "@/src/modules/notifications/components/enable-push-banner";
+export default function SettingsPage() { return <main className="form-page"><header className="form-header"><Link className="icon-button" href="/"><ArrowLeft size={19} /></Link><div><p className="eyebrow">FLIGHT ALERT</p><h1>Ustawienia</h1></div></header><section className="settings-card"><Smartphone size={22} /><div><h2>Aplikacja PWA</h2><p>Dodaj Flight Alert do ekranu głównego, aby otwierać go jak natywną aplikację.</p></div></section><section className="settings-card"><BellRing size={22} /><div><h2>Powiadomienia</h2><p>Maksymalnie jeden zbiorczy komunikat dziennie.</p></div></section><EnablePushBanner /></main>; }

@@ -1,12 +1,13 @@
 /* eslint-disable @next/next/no-img-element */
-import { Filter, Gauge, Home, Plus, Settings, UserRound } from 'lucide-react';
+import { Filter, Gauge, Home, Plus, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { getDashboardData } from '@/src/modules/alerts/queries';
 import { EnablePushBanner } from '@/src/modules/notifications/components/enable-push-banner';
+import { ProfileMenu } from '@/src/modules/auth/components/profile-menu';
 import { formatPrice } from '@/src/shared/lib/utils';
 
 export default async function DashboardPage() {
-    const { alerts, name, demo } = await getDashboardData();
+    const { alerts, name, email, demo } = await getDashboardData();
     const date = new Intl.DateTimeFormat('pl-PL', {
         weekday: 'long',
         day: 'numeric',
@@ -34,13 +35,7 @@ export default async function DashboardPage() {
                         </span>
                         <span>Flight Alert</span>
                     </Link>
-                    <button
-                        className='avatar'
-                        type='button'
-                        aria-label='Otwórz profil'
-                    >
-                        <UserRound size={16} />
-                    </button>
+                    <ProfileMenu email={email} />
                 </header>
                 <div className='hero'>
                     <div>

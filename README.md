@@ -6,7 +6,7 @@ Mobile-first PWA do prywatnego monitorowania cen lotów. Aplikacja używa Next.j
 
 1. Skopiuj `.env.example` do `.env.local` i uzupełnij wartości opisane niżej.
 2. Uruchom migrację `supabase/migrations/0001_initial.sql` w Supabase SQL Editor.
-3. Dodaj własny adres do `allowed_users`, np. `insert into public.allowed_users(email) values ('ty@example.com');`.
+3. Dodaj własny adres do `allowed_users`, np. `insert into public.allowed_users(email) values ('ty@example.com');`. Ten adres może następnie utworzyć konto z hasłem na stronie `/login`.
 4. Uruchom `pnpm dev`.
 
 Bez zmiennych Supabase interfejs działa w bezpiecznym trybie demo, dzięki czemu można rozwijać i testować UI bez zewnętrznych usług.

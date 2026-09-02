@@ -1,20 +1,41 @@
 /* eslint-disable @next/next/no-img-element */
-import { Filter, Gauge, Home, Plus, Settings } from 'lucide-react';
+import { Home, Plus, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { getDashboardData } from '@/src/modules/alerts/queries';
-import { EnablePushBanner } from '@/src/modules/notifications/components/enable-push-banner';
+import { AlertsSection } from '@/src/modules/alerts/components/alerts-section';
 import { ProfileMenu } from '@/src/modules/auth/components/profile-menu';
-import { formatPrice } from '@/src/shared/lib/utils';
+import { EnablePushBanner } from '@/src/modules/notifications/components/enable-push-banner';
+
+function scanSchedule(now = new Date()) {
+    const next = new Date(now);
+    next.setUTCHours(7, 0, 0, 0);
+    if (next <= now) next.setUTCDate(next.getUTCDate() + 1);
+    const formatter = new Intl.DateTimeFormat('pl-PL', {
+        weekday: 'long',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'Europe/Warsaw',
+    });
+    const localTime = new Intl.DateTimeFormat('pl-PL', {
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'Europe/Warsaw',
+    }).format(next);
+    return { nextLabel: formatter.format(next), localTime };
+}
 
 export default async function DashboardPage() {
     const { alerts, name, email, demo } = await getDashboardData();
+    const now = new Date();
     const date = new Intl.DateTimeFormat('pl-PL', {
         weekday: 'long',
         day: 'numeric',
         month: 'long',
     })
-        .format(new Date())
+        .format(now)
         .toUpperCase();
+    const schedule = scanSchedule(now);
+
     return (
         <main className='app-shell'>
             <div className='ambient ambient-one' />
@@ -58,97 +79,25 @@ export default async function DashboardPage() {
                         <span className='status'>
                             <i /> SKANOWANIE AKTYWNE
                         </span>
-                        <strong>Kolejne sprawdzenie jutro o 08:00</strong>
-                        <small>Harmonogram: codziennie o 07:00 UTC</small>
+                        <strong>
+                            Kolejne planowane sprawdzenie: {schedule.nextLabel}
+                        </strong>
+                        <small>
+                            Codziennie około {schedule.localTime} czasu
+                            polskiego (07:00 UTC)
+                        </small>
                     </div>
                     <span className='scan-count'>
                         <b>{alerts.filter((alert) => alert.active).length}</b>{' '}
                         trasy
                     </span>
                 </section>
-                <section className='section'>
-                    <div className='section-heading'>
-                        <div>
-                            <p className='eyebrow'>TWOJE TRASY</p>
-                            <h2>Aktywne alerty</h2>
-                        </div>
-                        <button className='filter-button' type='button'>
-                            <Filter size={13} /> Filtry
-                        </button>
-                    </div>
-                    {alerts.length ? (
-                        <div className='alert-grid'>
-                            {alerts.map((alert, index) => (
-                                <article
-                                    className={`alert-card ${index % 2 ? 'violet' : 'mint'}`}
-                                    key={alert.id}
-                                >
-                                    <div className='alert-topline'>
-                                        <span className='route-pill'>
-                                            {alert.origin} → {alert.destination}
-                                        </span>
-                                        <span className='active-pill'>
-                                            <i />{' '}
-                                            {alert.active
-                                                ? 'Aktywny'
-                                                : 'Wstrzymany'}
-                                        </span>
-                                    </div>
-                                    <div className='route-line'>
-                                        <span />
-                                        <i>✦</i>
-                                        <span />
-                                    </div>
-                                    <h3>
-                                        {alert.origin} · {alert.destination}
-                                    </h3>
-                                    <p>
-                                        {alert.departureDate}
-                                        {alert.returnDate
-                                            ? ` – ${alert.returnDate}`
-                                            : ' · w jedną stronę'}
-                                        {alert.flexDays
-                                            ? ` · ±${alert.flexDays} dni`
-                                            : ''}
-                                    </p>
-                                    <div className='price-row'>
-                                        <div>
-                                            <small>TWÓJ LIMIT</small>
-                                            <strong>
-                                                {formatPrice(alert.maxPrice)}
-                                            </strong>
-                                        </div>
-                                        <div className='price-found'>
-                                            <small>NAJLEPSZA CENA</small>
-                                            <strong>
-                                                {alert.bestPrice
-                                                    ? formatPrice(
-                                                          alert.bestPrice,
-                                                      )
-                                                    : '—'}
-                                            </strong>
-                                        </div>
-                                        <Link
-                                            href={`/alerts/${alert.id}`}
-                                            aria-label={`Szczegóły ${alert.origin} ${alert.destination}`}
-                                        >
-                                            →
-                                        </Link>
-                                    </div>
-                                </article>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className='empty-state'>
-                            <Gauge size={26} />
-                            <h3>Dodaj pierwszą trasę</h3>
-                            <p>
-                                Zaczniemy sprawdzać ceny od najbliższego skanu.
-                            </p>
-                            <Link href='/alerts/new'>Utwórz alert</Link>
-                        </div>
-                    )}
-                </section>
+                <AlertsSection
+                    key={alerts
+                        .map((alert) => `${alert.id}:${alert.active}`)
+                        .join('|')}
+                    alerts={alerts}
+                />
                 <EnablePushBanner />
             </section>
             <nav className='bottom-nav'>

@@ -1168,3 +1168,195 @@ h1 {
     border-radius: 10px;
     object-fit: cover;
 }
+.filters {
+    position: relative;
+}
+.filter-button[aria-expanded='true'] {
+    color: var(--mint);
+}
+.filter-popover {
+    position: absolute;
+    z-index: 12;
+    top: 38px;
+    right: 0;
+    display: grid;
+    min-width: 142px;
+    padding: 6px;
+    border: 1px solid rgba(216, 255, 236, 0.13);
+    border-radius: 13px;
+    background: #0e1b17;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.36);
+}
+.filter-popover button {
+    min-height: 36px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--muted);
+    font-size: 10px;
+    text-align: left;
+    cursor: pointer;
+}
+.filter-popover button:hover,
+.filter-popover button[aria-pressed='true'] {
+    background: rgba(117, 242, 177, 0.08);
+    color: var(--mint);
+}
+.status-button {
+    padding: 5px 7px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    cursor: pointer;
+}
+.status-button:hover {
+    background: rgba(117, 242, 177, 0.07);
+    color: var(--text);
+}
+.status-button:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+.section-message {
+    margin: -5px 0 12px;
+    color: var(--muted);
+    font-size: 10px;
+}
+.header-action {
+    margin-left: auto;
+}
+.offer-action {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 12px;
+    padding: 17px 18px;
+    border: 1px solid rgba(117, 242, 177, 0.22);
+    border-radius: 18px;
+    background: linear-gradient(120deg, rgba(25, 57, 45, 0.88), rgba(12, 25, 21, 0.92));
+    color: var(--mint);
+}
+.offer-action span,
+.offer-action small,
+.offer-action strong {
+    display: block;
+}
+.offer-action small {
+    margin-bottom: 5px;
+    color: #769289;
+    font-size: 7px;
+    font-weight: 850;
+    letter-spacing: 0.12em;
+}
+.offer-action strong {
+    font-size: 13px;
+}
+.alert-actions {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 9px;
+    margin-top: 14px;
+}
+.alert-actions button {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+}
+.alert-actions button:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+.secondary-action {
+    border: 1px solid var(--line);
+    background: #13231d;
+    color: var(--text);
+}
+.danger-action {
+    padding: 0 14px;
+    border: 1px solid rgba(255, 130, 130, 0.18);
+    background: rgba(255, 130, 130, 0.06);
+    color: #ffaaaa;
+}
+.alert-actions .form-message {
+    grid-column: 1/-1;
+    margin-top: 0;
+}
+.route-loading {
+    min-height: 100svh;
+    width: min(100%, 1120px);
+    margin: 0 auto;
+    padding: 20px 18px 100px;
+    background: #07100d;
+}
+.loading-topbar,
+.loading-hero {
+    display: flex;
+    justify-content: space-between;
+}
+.loading-topbar {
+    height: 54px;
+    align-items: center;
+    border-bottom: 1px solid var(--line);
+}
+.loading-topbar span:first-child {
+    width: 132px;
+    height: 28px;
+}
+.loading-topbar span:last-child {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+}
+.loading-hero {
+    display: grid;
+    gap: 12px;
+    padding: 46px 0 30px;
+}
+.loading-hero span:nth-child(1) {
+    width: 120px;
+    height: 11px;
+}
+.loading-hero span:nth-child(2) {
+    width: min(86%, 420px);
+    height: 44px;
+}
+.loading-hero span:nth-child(3) {
+    width: min(70%, 360px);
+    height: 16px;
+}
+.loading-card {
+    height: 116px;
+    margin-bottom: 16px;
+    border-radius: 20px;
+}
+.loading-card.short {
+    height: 210px;
+}
+.loading-topbar span,
+.loading-hero span,
+.loading-card {
+    background: linear-gradient(100deg, #10201a 25%, #183028 50%, #10201a 75%);
+    background-size: 200% 100%;
+    animation: loading-shimmer 1.4s ease-in-out infinite;
+}
+@keyframes loading-shimmer {
+    to {
+        background-position: -200% 0;
+    }
+}
+@media (min-width: 620px) {
+    .alert-actions {
+        grid-template-columns: minmax(220px, 320px) auto;
+    }
+    .route-loading {
+        padding-inline: 32px;
+    }
+}

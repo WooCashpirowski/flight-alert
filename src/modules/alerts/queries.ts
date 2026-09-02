@@ -12,6 +12,8 @@ export type DashboardAlert = {
     maxPrice: number;
     active: boolean;
     bestPrice: number | null;
+    bestOfferUrl: string | null;
+    bestProvider: string | null;
 };
 
 const demoAlerts: DashboardAlert[] = [
@@ -25,6 +27,8 @@ const demoAlerts: DashboardAlert[] = [
         maxPrice: 650,
         active: true,
         bestPrice: 489,
+        bestOfferUrl: 'https://www.google.com/travel/flights?hl=pl&curr=PLN',
+        bestProvider: 'Google Flights',
     },
     {
         id: 'demo-krk-fco',
@@ -36,6 +40,8 @@ const demoAlerts: DashboardAlert[] = [
         maxPrice: 520,
         active: true,
         bestPrice: null,
+        bestOfferUrl: null,
+        bestProvider: null,
     },
 ];
 
@@ -59,7 +65,7 @@ export async function getDashboardData(): Promise<{
     const { data, error } = await supabase
         .from('alerts')
         .select(
-            'id,origin,destination,departure_date,return_date,flex_days,max_price,active,best_price',
+            'id,origin,destination,departure_date,return_date,flex_days,max_price,active,best_price,best_offer_url,best_provider',
         )
         .order('created_at', { ascending: false });
     if (error) {
@@ -83,6 +89,8 @@ export async function getDashboardData(): Promise<{
             active: item.active,
             bestPrice:
                 item.best_price === null ? null : Number(item.best_price),
+            bestOfferUrl: item.best_offer_url,
+            bestProvider: item.best_provider,
         })),
         name:
             user.user_metadata.full_name ??

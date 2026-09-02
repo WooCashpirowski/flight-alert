@@ -138,6 +138,21 @@ export async function registerWithPassword(
         };
     } catch (error) {
         console.error('Password registration failed', error);
+        const reason = error instanceof Error ? error.message : '';
+        if (/email address not authorized/i.test(reason)) {
+            return {
+                ok: false,
+                message:
+                    'Nie można wysłać potwierdzenia na ten adres. Administrator musi skonfigurować wysyłkę SMTP.',
+            };
+        }
+        if (/rate limit/i.test(reason)) {
+            return {
+                ok: false,
+                message:
+                    'Wysłano zbyt wiele wiadomości. Odczekaj chwilę i spróbuj ponownie.',
+            };
+        }
         return {
             ok: false,
             message:

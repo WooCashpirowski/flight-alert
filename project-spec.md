@@ -33,6 +33,7 @@ Najważniejsze założenia:
 | Framework | Next.js 16.2, App Router, TypeScript |
 | UI | React 19, własny CSS z Tailwind CSS 4, Lucide React |
 | Font | lokalnie bundlowany Roboto przez `@fontsource/roboto` |
+| Lokalizacja | statyczne, typowane słowniki PL podzielone według modułów |
 | Formularze | React Hook Form + Zod 4 |
 | Baza i uwierzytelnianie | Supabase PostgreSQL, Supabase Auth, RLS |
 | Wyszukiwanie lotów | Google Flights przez SerpApi; awaryjnie publiczny endpoint Ryanair |
@@ -196,6 +197,7 @@ Tabela `notification_dispatches` i unikalność `(user_id, dispatch_date)` zapob
 - Ikony 192×192, 512×512, maskable 512×512 i Apple Touch Icon.
 - Własna ikona Flight Alert jest używana w nagłówku, instalacji PWA i powiadomieniach.
 - Service worker buforuje ekran offline oraz zasoby ikon.
+- Service worker buforuje również własny mały słownik komunikatów powiadomień.
 - Dla nieudanej nawigacji sieciowej pokazywana jest strona `/offline`.
 - Układ jest mobile-first, z dolną nawigacją zoptymalizowaną dla telefonu.
 - UI używa Roboto, własnego ciemnego systemu wizualnego i ikon Lucide.
@@ -258,8 +260,11 @@ src/modules/
 
 src/shared/lib/
 ├── supabase/             # klienci browser, server i admin
+├── i18n/                 # konfiguracja locale, strefy czasowej i waluty
 ├── env.ts
 └── utils.ts
+
+src/translations/pl/      # typowane słowniki aplikacji, alertów, auth i powiadomień
 
 public/                   # service worker, ikony i grafika Open Graph
 supabase/migrations/      # migracje 0001 i 0002

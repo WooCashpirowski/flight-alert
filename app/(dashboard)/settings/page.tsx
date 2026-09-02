@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { EnablePushBanner } from '@/src/modules/notifications/components/enable-push-banner';
 import { PasswordForm } from '@/src/modules/auth/components/password-form';
 import { getWhitelistedUser } from '@/src/modules/auth/guard';
+import { appTranslations } from '@/src/translations/pl/app';
 
 export default async function SettingsPage() {
     const user = await getWhitelistedUser();
@@ -14,19 +15,18 @@ export default async function SettingsPage() {
                     <ArrowLeft size={19} />
                 </Link>
                 <div>
-                    <p className='eyebrow'>FLIGHT ALERT</p>
-                    <h1>Ustawienia</h1>
+                    <p className='eyebrow'>{appTranslations.settings.eyebrow}</p>
+                    <h1>{appTranslations.settings.title}</h1>
                 </div>
             </header>
             {user && (
                 <section className='settings-card account-settings'>
                     <KeyRound size={22} />
                     <div>
-                        <h2>Logowanie i konto</h2>
+                        <h2>{appTranslations.settings.accountTitle}</h2>
                         <p>{user.email}</p>
                         <p>
-                            Ustaw hasło także wtedy, gdy konto zostało wcześniej
-                            utworzone przez magic link.
+                            {appTranslations.settings.accountDescription}
                         </p>
                         <PasswordForm />
                     </div>
@@ -35,15 +35,15 @@ export default async function SettingsPage() {
             <section className='settings-card'>
                 <Smartphone size={22} />
                 <div>
-                    <h2>Aplikacja</h2>
-                    <p>Dodaj Flight Alert do ekranu głównego.</p>
+                    <h2>{appTranslations.settings.appTitle}</h2>
+                    <p>{appTranslations.settings.appDescription}</p>
                 </div>
             </section>
             <section className='settings-card'>
                 <BellRing size={22} />
                 <div>
-                    <h2>Powiadomienia</h2>
-                    <p>Maksymalnie jeden zbiorczy komunikat dziennie.</p>
+                    <h2>{appTranslations.settings.notificationsTitle}</h2>
+                    <p>{appTranslations.settings.notificationsDescription}</p>
                 </div>
             </section>
             <EnablePushBanner />

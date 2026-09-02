@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { KeyRound, LoaderCircle } from 'lucide-react';
 import { updatePassword } from '@/src/modules/auth/actions';
+import { authTranslations } from '@/src/translations/pl/auth';
 
 export function PasswordForm() {
     const [password, setPassword] = useState('');
@@ -28,7 +29,7 @@ export function PasswordForm() {
             }}
         >
             <label htmlFor='new-password'>
-                Nowe hasło
+                {authTranslations.form.newPassword}
                 <input
                     id='new-password'
                     type='password'
@@ -41,7 +42,7 @@ export function PasswordForm() {
                 />
             </label>
             <label htmlFor='new-password-confirmation'>
-                Powtórz hasło
+                {authTranslations.form.confirmation}
                 <input
                     id='new-password-confirmation'
                     type='password'
@@ -59,7 +60,7 @@ export function PasswordForm() {
                 ) : (
                     <KeyRound size={16} />
                 )}{' '}
-                Zapisz hasło
+                {authTranslations.form.savePassword}
             </button>
             {message && (
                 <p

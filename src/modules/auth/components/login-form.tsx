@@ -6,6 +6,7 @@ import {
     registerWithPassword,
     signInWithPassword,
 } from '@/src/modules/auth/actions';
+import { authTranslations } from '@/src/translations/pl/auth';
 
 type Mode = 'login' | 'register';
 
@@ -31,7 +32,7 @@ export function LoginForm({ nextPath = '/' }: { nextPath?: string }) {
             <div
                 className='auth-tabs'
                 role='tablist'
-                aria-label='Wybierz sposób dostępu'
+                aria-label={authTranslations.form.accessMethod}
             >
                 <button
                     type='button'
@@ -39,7 +40,7 @@ export function LoginForm({ nextPath = '/' }: { nextPath?: string }) {
                     aria-selected={mode === 'login'}
                     onClick={() => changeMode('login')}
                 >
-                    Logowanie
+                    {authTranslations.form.loginTab}
                 </button>
                 <button
                     type='button'
@@ -47,7 +48,7 @@ export function LoginForm({ nextPath = '/' }: { nextPath?: string }) {
                     aria-selected={mode === 'register'}
                     onClick={() => changeMode('register')}
                 >
-                    Rejestracja
+                    {authTranslations.form.registerTab}
                 </button>
             </div>
             <form
@@ -57,7 +58,9 @@ export function LoginForm({ nextPath = '/' }: { nextPath?: string }) {
                     setMessage(undefined);
                     setIsSuccess(false);
                     if (mode === 'register' && password !== confirmation) {
-                        setMessage('Hasła nie są takie same.');
+                        setMessage(
+                            authTranslations.validation.passwordsMismatch,
+                        );
                         return;
                     }
                     startTransition(async () => {
@@ -78,20 +81,20 @@ export function LoginForm({ nextPath = '/' }: { nextPath?: string }) {
                     });
                 }}
             >
-                <label htmlFor='email'>Adres e-mail</label>
+                <label htmlFor='email'>{authTranslations.form.email}</label>
                 <div className='input-with-icon'>
                     <Mail aria-hidden='true' size={18} />
                     <input
                         id='email'
                         type='email'
                         autoComplete='email'
-                        placeholder='ty@example.com'
+                        placeholder={authTranslations.form.emailPlaceholder}
                         value={email}
                         onChange={(event) => setEmail(event.target.value)}
                         required
                     />
                 </div>
-                <label htmlFor='password'>Hasło</label>
+                <label htmlFor='password'>{authTranslations.form.password}</label>
                 <div className='input-with-icon'>
                     <LockKeyhole aria-hidden='true' size={18} />
                     <input
@@ -104,7 +107,7 @@ export function LoginForm({ nextPath = '/' }: { nextPath?: string }) {
                         }
                         minLength={8}
                         maxLength={72}
-                        placeholder='Minimum 8 znaków'
+                        placeholder={authTranslations.form.passwordPlaceholder}
                         value={password}
                         onChange={(event) => setPassword(event.target.value)}
                         required
@@ -112,7 +115,9 @@ export function LoginForm({ nextPath = '/' }: { nextPath?: string }) {
                 </div>
                 {mode === 'register' && (
                     <>
-                        <label htmlFor='confirmation'>Powtórz hasło</label>
+                        <label htmlFor='confirmation'>
+                            {authTranslations.form.confirmation}
+                        </label>
                         <div className='input-with-icon'>
                             <LockKeyhole aria-hidden='true' size={18} />
                             <input
@@ -121,7 +126,10 @@ export function LoginForm({ nextPath = '/' }: { nextPath?: string }) {
                                 autoComplete='new-password'
                                 minLength={8}
                                 maxLength={72}
-                                placeholder='Wpisz hasło ponownie'
+                                placeholder={
+                                    authTranslations.form
+                                        .confirmationPlaceholder
+                                }
                                 value={confirmation}
                                 onChange={(event) =>
                                     setConfirmation(event.target.value)
@@ -145,7 +153,9 @@ export function LoginForm({ nextPath = '/' }: { nextPath?: string }) {
                     ) : (
                         <ArrowRight aria-hidden='true' size={18} />
                     )}{' '}
-                    {mode === 'login' ? 'Zaloguj się' : 'Utwórz konto'}
+                    {mode === 'login'
+                        ? authTranslations.form.loginSubmit
+                        : authTranslations.form.registerSubmit}
                 </button>
                 {message && (
                     <p

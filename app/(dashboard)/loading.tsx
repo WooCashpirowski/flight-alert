@@ -1,8 +1,10 @@
+import { appTranslations } from '@/src/translations/pl/app';
+
 export default function DashboardLoading() {
     return (
         <main
             className='route-loading'
-            aria-label='Ładowanie strony'
+            aria-label={appTranslations.loading.page}
             aria-busy='true'
         >
             <div className='loading-topbar'>

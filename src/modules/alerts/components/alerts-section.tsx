@@ -7,12 +7,13 @@ import { useRouter } from 'next/navigation';
 import { toggleAlert } from '@/src/modules/alerts/actions';
 import type { DashboardAlert } from '@/src/modules/alerts/queries';
 import { formatPrice } from '@/src/shared/lib/utils';
+import { alertTranslations } from '@/src/translations/pl/alerts';
 
 type AlertFilter = 'all' | 'active' | 'paused';
 const filterLabels: Record<AlertFilter, string> = {
-    all: 'Wszystkie',
-    active: 'Aktywne',
-    paused: 'Wstrzymane',
+    all: alertTranslations.list.filters.all,
+    active: alertTranslations.list.filters.active,
+    paused: alertTranslations.list.filters.paused,
 };
 
 export function AlertsSection({ alerts }: { alerts: DashboardAlert[] }) {
@@ -54,8 +55,8 @@ export function AlertsSection({ alerts }: { alerts: DashboardAlert[] }) {
         <section className='section'>
             <div className='section-heading'>
                 <div>
-                    <p className='eyebrow'>TWOJE TRASY</p>
-                    <h2>Alerty cenowe</h2>
+                    <p className='eyebrow'>{alertTranslations.list.eyebrow}</p>
+                    <h2>{alertTranslations.list.title}</h2>
                 </div>
                 <div className='filters'>
                     <button
@@ -112,8 +113,14 @@ export function AlertsSection({ alerts }: { alerts: DashboardAlert[] }) {
                                     }
                                     aria-label={
                                         alert.active
-                                            ? `Wstrzymaj alert ${alert.origin} ${alert.destination}`
-                                            : `Wznów alert ${alert.origin} ${alert.destination}`
+                                            ? alertTranslations.list.pauseAria(
+                                                  alert.origin,
+                                                  alert.destination,
+                                              )
+                                            : alertTranslations.list.resumeAria(
+                                                  alert.origin,
+                                                  alert.destination,
+                                              )
                                     }
                                     onClick={() => changeState(alert)}
                                 >
@@ -125,7 +132,9 @@ export function AlertsSection({ alerts }: { alerts: DashboardAlert[] }) {
                                     ) : (
                                         <i />
                                     )}{' '}
-                                    {alert.active ? 'Aktywny' : 'Wstrzymany'}
+                                    {alert.active
+                                        ? alertTranslations.list.active
+                                        : alertTranslations.list.paused}
                                 </button>
                             </div>
                             <div className='route-line'>
@@ -140,20 +149,24 @@ export function AlertsSection({ alerts }: { alerts: DashboardAlert[] }) {
                                 {alert.departureDate}
                                 {alert.returnDate
                                     ? ` – ${alert.returnDate}`
-                                    : ' · w jedną stronę'}
+                                    : alertTranslations.list.oneWaySuffix}
                                 {alert.flexDays
-                                    ? ` · ±${alert.flexDays} dni`
+                                    ? alertTranslations.list.flexSuffix(
+                                          alert.flexDays,
+                                      )
                                     : ''}
                             </p>
                             <div className='price-row'>
                                 <div>
-                                    <small>TWÓJ LIMIT</small>
+                                    <small>{alertTranslations.list.limit}</small>
                                     <strong>
                                         {formatPrice(alert.maxPrice)}
                                     </strong>
                                 </div>
                                 <div className='price-found'>
-                                    <small>NAJLEPSZA CENA</small>
+                                    <small>
+                                        {alertTranslations.list.bestPrice}
+                                    </small>
                                     <strong>
                                         {alert.bestPrice
                                             ? formatPrice(alert.bestPrice)
@@ -162,7 +175,10 @@ export function AlertsSection({ alerts }: { alerts: DashboardAlert[] }) {
                                 </div>
                                 <Link
                                     href={`/alerts/${alert.id}`}
-                                    aria-label={`Szczegóły ${alert.origin} ${alert.destination}`}
+                                    aria-label={alertTranslations.list.detailsAria(
+                                        alert.origin,
+                                        alert.destination,
+                                    )}
                                 >
                                     →
                                 </Link>
@@ -175,15 +191,18 @@ export function AlertsSection({ alerts }: { alerts: DashboardAlert[] }) {
                     <Gauge size={26} />
                     <h3>
                         {items.length
-                            ? 'Brak alertów w tej kategorii'
-                            : 'Dodaj pierwszą trasę'}
+                            ? alertTranslations.list.noFilteredAlerts
+                            : alertTranslations.list.noAlerts}
                     </h3>
                     <p>
                         {items.length
-                            ? 'Wybierz inny filtr lub zmień stan alertu.'
-                            : 'Zaczniemy sprawdzać ceny od najbliższego skanu.'}
+                            ? alertTranslations.list
+                                  .noFilteredAlertsDescription
+                            : alertTranslations.list.noAlertsDescription}
                     </p>
-                    <Link href='/alerts/new'>Utwórz alert</Link>
+                    <Link href='/alerts/new'>
+                        {alertTranslations.list.create}
+                    </Link>
                 </div>
             )}
         </section>

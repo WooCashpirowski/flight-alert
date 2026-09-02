@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { ServiceWorkerRegistration } from '@/src/modules/pwa/components/service-worker-registration';
+import { i18nConfig } from '@/src/shared/i18n/config';
+import { appTranslations } from '@/src/translations/pl/app';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
@@ -12,17 +14,16 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
 export const metadata: Metadata = {
     metadataBase: siteUrl,
     title: {
-        default: 'Flight Alert — tanie loty bez ciągłego szukania',
-        template: '%s · Flight Alert',
+        default: appTranslations.metadata.defaultTitle,
+        template: appTranslations.metadata.titleTemplate,
     },
-    description:
-        'Prywatne alerty cenowe lotów z jednym zwięzłym powiadomieniem dziennie.',
-    applicationName: 'Flight Alert',
+    description: appTranslations.metadata.description,
+    applicationName: appTranslations.common.name,
     manifest: '/manifest.webmanifest',
     appleWebApp: {
         capable: true,
         statusBarStyle: 'black-translucent',
-        title: 'Flight Alert',
+        title: appTranslations.common.name,
     },
     icons: {
         icon: [
@@ -37,23 +38,23 @@ export const metadata: Metadata = {
         ],
     },
     openGraph: {
-        title: 'Flight Alert',
-        description: 'Tanie loty bez ciągłego szukania',
+        title: appTranslations.common.name,
+        description: appTranslations.metadata.tagline,
         type: 'website',
-        locale: 'pl_PL',
+        locale: i18nConfig.openGraphLocale,
         images: [
             {
                 url: '/og.png',
                 width: 1200,
                 height: 630,
-                alt: 'Flight Alert — tanie loty bez ciągłego szukania',
+                alt: appTranslations.metadata.imageAlt,
             },
         ],
     },
     twitter: {
         card: 'summary_large_image',
-        title: 'Flight Alert',
-        description: 'Tanie loty bez ciągłego szukania',
+        title: appTranslations.common.name,
+        description: appTranslations.metadata.tagline,
         images: ['/og.png'],
     },
 };
@@ -69,7 +70,7 @@ export default function RootLayout({
     children,
 }: Readonly<{ children: React.ReactNode }>) {
     return (
-        <html lang='pl' data-scroll-behavior='smooth'>
+        <html lang={i18nConfig.htmlLang} data-scroll-behavior='smooth'>
             <body>
                 {children}
                 <ServiceWorkerRegistration />

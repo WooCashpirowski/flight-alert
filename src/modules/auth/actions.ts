@@ -5,12 +5,16 @@ import { z } from 'zod';
 import { createSupabaseAdminClient } from '@/src/shared/lib/supabase/admin';
 import { createSupabaseServerClient } from '@/src/shared/lib/supabase/server';
 import { hasSupabaseConfig } from '@/src/shared/lib/env';
+import { authTranslations } from '@/src/translations/pl/auth';
 
-const EmailSchema = z.string().trim().email('Podaj poprawny adres e-mail');
+const EmailSchema = z
+    .string()
+    .trim()
+    .email(authTranslations.validation.email);
 const PasswordSchema = z
     .string()
-    .min(8, 'Hasło musi mieć co najmniej 8 znaków')
-    .max(72, 'Hasło może mieć maksymalnie 72 znaki');
+    .min(8, authTranslations.validation.passwordMin)
+    .max(72, authTranslations.validation.passwordMax);
 
 export type AuthActionResult = {
     ok: boolean;
@@ -40,13 +44,17 @@ function parseCredentials(
     if (!email.success)
         return {
             success: false,
-            error: email.error.issues[0]?.message ?? 'Niepoprawny e-mail',
+            error:
+                email.error.issues[0]?.message ??
+                authTranslations.validation.invalidEmail,
         };
     const password = PasswordSchema.safeParse(rawPassword);
     if (!password.success)
         return {
             success: false,
-            error: password.error.issues[0]?.message ?? 'Niepoprawne hasło',
+            error:
+                password.error.issues[0]?.message ??
+                authTranslations.validation.invalidPassword,
         };
     return {
         success: true,
@@ -64,14 +72,14 @@ export async function signInWithPassword(
     if (!hasSupabaseConfig)
         return {
             ok: false,
-            message: 'Logowanie jest niedostępne w trybie demonstracyjnym.',
+            message: authTranslations.actions.loginUnavailable,
         };
 
     try {
         if (!(await isAllowedEmail(credentials.email))) {
             return {
                 ok: false,
-                message: 'Brak dostępu. Skontaktuj się z administratorem.',
+                message: authTranslations.actions.accessDenied,
             };
         }
 
@@ -84,11 +92,14 @@ export async function signInWithPassword(
         return {
             ok: true,
             authenticated: true,
-            message: 'Zalogowano pomyślnie.',
+            message: authTranslations.actions.signedIn,
         };
     } catch (error) {
         console.error('Password sign-in failed', error);
-        return { ok: false, message: 'Nieprawidłowy e-mail lub hasło.' };
+        return {
+            ok: false,
+            message: authTranslations.actions.invalidCredentials,
+        };
     }
 }
 
@@ -101,14 +112,14 @@ export async function registerWithPassword(
     if (!hasSupabaseConfig)
         return {
             ok: false,
-            message: 'Rejestracja jest niedostępna w trybie demonstracyjnym.',
+            message: authTranslations.actions.registrationUnavailable,
         };
 
     try {
         if (!(await isAllowedEmail(credentials.email))) {
             return {
                 ok: false,
-                message: 'Ten adres nie znajduje się na liście dostępu.',
+                message: authTranslations.actions.emailNotAllowed,
             };
         }
 
@@ -127,14 +138,13 @@ export async function registerWithPassword(
             return {
                 ok: true,
                 authenticated: true,
-                message: 'Konto zostało utworzone.',
+                message: authTranslations.actions.accountCreated,
             };
         }
 
         return {
             ok: true,
-            message:
-                'Sprawdź skrzynkę i potwierdź adres e-mail. Potem zalogujesz się hasłem.',
+            message: authTranslations.actions.confirmEmail,
         };
     } catch (error) {
         console.error('Password registration failed', error);
@@ -142,21 +152,18 @@ export async function registerWithPassword(
         if (/email address not authorized/i.test(reason)) {
             return {
                 ok: false,
-                message:
-                    'Nie można wysłać potwierdzenia na ten adres. Administrator musi skonfigurować wysyłkę SMTP.',
+                message: authTranslations.actions.smtpUnavailable,
             };
         }
         if (/rate limit/i.test(reason)) {
             return {
                 ok: false,
-                message:
-                    'Wysłano zbyt wiele wiadomości. Odczekaj chwilę i spróbuj ponownie.',
+                message: authTranslations.actions.rateLimited,
             };
         }
         return {
             ok: false,
-            message:
-                'Nie udało się utworzyć konta. Jeśli korzystałeś wcześniej z magic linku, ustaw hasło w Ustawieniach w aktywnej sesji.',
+            message: authTranslations.actions.registrationFailed,
         };
     }
 }
@@ -169,14 +176,19 @@ export async function updatePassword(
     if (!password.success)
         return {
             ok: false,
-            message: password.error.issues[0]?.message ?? 'Niepoprawne hasło',
+            message:
+                password.error.issues[0]?.message ??
+                authTranslations.validation.invalidPassword,
         };
     if (password.data !== rawConfirmation)
-        return { ok: false, message: 'Hasła nie są takie same.' };
+        return {
+            ok: false,
+            message: authTranslations.validation.passwordsMismatch,
+        };
     if (!hasSupabaseConfig)
         return {
             ok: false,
-            message: 'Zmiana hasła jest niedostępna w trybie demonstracyjnym.',
+            message: authTranslations.actions.passwordChangeUnavailable,
         };
 
     try {
@@ -187,7 +199,7 @@ export async function updatePassword(
         if (!user?.email || !(await isAllowedEmail(user.email))) {
             return {
                 ok: false,
-                message: 'Sesja wygasła. Zaloguj się ponownie.',
+                message: authTranslations.actions.sessionExpired,
             };
         }
         const { error } = await supabase.auth.updateUser({
@@ -196,14 +208,13 @@ export async function updatePassword(
         if (error) throw error;
         return {
             ok: true,
-            message:
-                'Hasło zostało zapisane. Możesz używać go na wszystkich urządzeniach.',
+            message: authTranslations.actions.passwordSaved,
         };
     } catch (error) {
         console.error('Password update failed', error);
         return {
             ok: false,
-            message: 'Nie udało się zapisać hasła. Spróbuj ponownie.',
+            message: authTranslations.actions.passwordSaveFailed,
         };
     }
 }

@@ -5,21 +5,23 @@ import { getDashboardData } from '@/src/modules/alerts/queries';
 import { AlertsSection } from '@/src/modules/alerts/components/alerts-section';
 import { ProfileMenu } from '@/src/modules/auth/components/profile-menu';
 import { EnablePushBanner } from '@/src/modules/notifications/components/enable-push-banner';
+import { i18nConfig } from '@/src/shared/i18n/config';
+import { appTranslations } from '@/src/translations/pl/app';
 
 function scanSchedule(now = new Date()) {
     const next = new Date(now);
     next.setUTCHours(7, 0, 0, 0);
     if (next <= now) next.setUTCDate(next.getUTCDate() + 1);
-    const formatter = new Intl.DateTimeFormat('pl-PL', {
+    const formatter = new Intl.DateTimeFormat(i18nConfig.locale, {
         weekday: 'long',
         hour: '2-digit',
         minute: '2-digit',
-        timeZone: 'Europe/Warsaw',
+        timeZone: i18nConfig.timeZone,
     });
-    const localTime = new Intl.DateTimeFormat('pl-PL', {
+    const localTime = new Intl.DateTimeFormat(i18nConfig.locale, {
         hour: '2-digit',
         minute: '2-digit',
-        timeZone: 'Europe/Warsaw',
+        timeZone: i18nConfig.timeZone,
     }).format(next);
     return { nextLabel: formatter.format(next), localTime };
 }
@@ -27,7 +29,7 @@ function scanSchedule(now = new Date()) {
 export default async function DashboardPage() {
     const { alerts, name, email, demo } = await getDashboardData();
     const now = new Date();
-    const date = new Intl.DateTimeFormat('pl-PL', {
+    const date = new Intl.DateTimeFormat(i18nConfig.locale, {
         weekday: 'long',
         day: 'numeric',
         month: 'long',
@@ -35,6 +37,7 @@ export default async function DashboardPage() {
         .format(now)
         .toUpperCase();
     const schedule = scanSchedule(now);
+    const activeAlertsCount = alerts.filter((alert) => alert.active).length;
 
     return (
         <main className='app-shell'>
@@ -42,7 +45,7 @@ export default async function DashboardPage() {
             <div className='ambient ambient-two' />
             <section
                 className='dashboard'
-                aria-label='Panel alertów lotniczych'
+                aria-label={appTranslations.dashboard.ariaLabel}
             >
                 <header className='topbar'>
                     <Link className='brand' href='/'>
@@ -54,21 +57,21 @@ export default async function DashboardPage() {
                                 height='32'
                             />
                         </span>
-                        <span>Flight Alert</span>
+                        <span>{appTranslations.common.name}</span>
                     </Link>
                     <ProfileMenu email={email} />
                 </header>
                 <div className='hero'>
                     <div>
                         <p className='eyebrow'>{date}</p>
-                        <h1>Dzień dobry, {name}</h1>
+                        <h1>{appTranslations.dashboard.greeting(name)}</h1>
                         <p className='hero-copy'>
-                            Pilnujemy cen, Ty planujesz podróż.
-                            {demo && ' Teraz oglądasz bezpieczny tryb demo.'}
+                            {appTranslations.dashboard.hero}
+                            {demo && appTranslations.dashboard.demoSuffix}
                         </p>
                     </div>
                     <Link className='primary-action' href='/alerts/new'>
-                        <Plus size={18} /> Nowy alert
+                        <Plus size={18} /> {appTranslations.dashboard.newAlert}
                     </Link>
                 </div>
                 <section className='scan-card'>
@@ -77,19 +80,22 @@ export default async function DashboardPage() {
                     </div>
                     <div className='scan-copy'>
                         <span className='status'>
-                            <i /> SKANOWANIE AKTYWNE
+                            <i /> {appTranslations.dashboard.scanActive}
                         </span>
                         <strong>
-                            Kolejne planowane sprawdzenie: {schedule.nextLabel}
+                            {appTranslations.dashboard.nextScan(
+                                schedule.nextLabel,
+                            )}
                         </strong>
                         <small>
-                            Codziennie około {schedule.localTime} czasu
-                            polskiego (07:00 UTC)
+                            {appTranslations.dashboard.dailyScan(
+                                schedule.localTime,
+                            )}
                         </small>
                     </div>
                     <span className='scan-count'>
-                        <b>{alerts.filter((alert) => alert.active).length}</b>{' '}
-                        trasy
+                        <b>{activeAlertsCount}</b>{' '}
+                        {appTranslations.dashboard.routeNoun(activeAlertsCount)}
                     </span>
                 </section>
                 <AlertsSection
@@ -103,15 +109,15 @@ export default async function DashboardPage() {
             <nav className='bottom-nav'>
                 <Link className='selected' href='/'>
                     <Home />
-                    Panel
+                    {appTranslations.dashboard.navigation.dashboard}
                 </Link>
                 <Link href='/alerts/new'>
                     <Plus />
-                    Nowy alert
+                    {appTranslations.dashboard.navigation.newAlert}
                 </Link>
                 <Link href='/settings'>
                     <Settings />
-                    Ustawienia
+                    {appTranslations.dashboard.navigation.settings}
                 </Link>
             </nav>
         </main>

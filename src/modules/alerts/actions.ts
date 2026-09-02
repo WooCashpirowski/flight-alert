@@ -8,6 +8,7 @@ import {
 import { requireWhitelistedUser } from '@/src/modules/auth/guard';
 import { hasSupabaseConfig } from '@/src/shared/lib/env';
 import { createSupabaseServerClient } from '@/src/shared/lib/supabase/server';
+import { alertTranslations } from '@/src/translations/pl/alerts';
 
 export type AlertActionResult = { ok: boolean; message: string; id?: string };
 
@@ -32,13 +33,14 @@ export async function createAlert(
     if (!parsed.success)
         return {
             ok: false,
-            message: parsed.error.issues[0]?.message ?? 'Sprawdź dane alertu',
+            message:
+                parsed.error.issues[0]?.message ??
+                alertTranslations.validation.checkData,
         };
     if (!hasSupabaseConfig)
         return {
             ok: true,
-            message:
-                'Alert wygląda świetnie. W trybie demo nie został zapisany.',
+            message: alertTranslations.actions.createDemo,
             id: 'demo',
         };
 
@@ -52,12 +54,16 @@ export async function createAlert(
             .single();
         if (error) throw error;
         revalidatePath('/');
-        return { ok: true, message: 'Alert został zapisany.', id: data.id };
+        return {
+            ok: true,
+            message: alertTranslations.actions.created,
+            id: data.id,
+        };
     } catch (error) {
         console.error('Create alert failed', error);
         return {
             ok: false,
-            message: 'Nie udało się zapisać alertu. Spróbuj ponownie.',
+            message: alertTranslations.actions.createFailed,
         };
     }
 }
@@ -70,12 +76,14 @@ export async function updateAlert(
     if (!parsed.success)
         return {
             ok: false,
-            message: parsed.error.issues[0]?.message ?? 'Sprawdź dane alertu',
+            message:
+                parsed.error.issues[0]?.message ??
+                alertTranslations.validation.checkData,
         };
     if (!hasSupabaseConfig)
         return {
             ok: true,
-            message: 'Zmiany wyglądają poprawnie w trybie demo.',
+            message: alertTranslations.actions.updateDemo,
             id,
         };
 
@@ -90,13 +98,24 @@ export async function updateAlert(
             .select('id')
             .maybeSingle();
         if (error) throw error;
-        if (!data) return { ok: false, message: 'Nie znaleziono alertu.' };
+        if (!data)
+            return {
+                ok: false,
+                message: alertTranslations.actions.notFound,
+            };
         revalidatePath('/');
         revalidatePath(`/alerts/${id}`);
-        return { ok: true, message: 'Zmiany zostały zapisane.', id };
+        return {
+            ok: true,
+            message: alertTranslations.actions.updated,
+            id,
+        };
     } catch (error) {
         console.error('Update alert failed', error);
-        return { ok: false, message: 'Nie udało się zapisać zmian.' };
+        return {
+            ok: false,
+            message: alertTranslations.actions.updateFailed,
+        };
     }
 }
 
@@ -108,8 +127,8 @@ export async function toggleAlert(
         return {
             ok: true,
             message: active
-                ? 'Alert włączony w trybie demo.'
-                : 'Alert wstrzymany w trybie demo.',
+                ? alertTranslations.actions.enabledDemo
+                : alertTranslations.actions.pausedDemo,
         };
     try {
         const user = await requireWhitelistedUser();
@@ -122,22 +141,34 @@ export async function toggleAlert(
             .select('id')
             .maybeSingle();
         if (error) throw error;
-        if (!data) return { ok: false, message: 'Nie znaleziono alertu.' };
+        if (!data)
+            return {
+                ok: false,
+                message: alertTranslations.actions.notFound,
+            };
         revalidatePath('/');
         revalidatePath(`/alerts/${id}`);
         return {
             ok: true,
-            message: active ? 'Alert włączony.' : 'Alert wstrzymany.',
+            message: active
+                ? alertTranslations.actions.enabled
+                : alertTranslations.actions.paused,
         };
     } catch (error) {
         console.error('Toggle alert failed', error);
-        return { ok: false, message: 'Nie udało się zmienić alertu.' };
+        return {
+            ok: false,
+            message: alertTranslations.actions.toggleFailed,
+        };
     }
 }
 
 export async function deleteAlert(id: string): Promise<AlertActionResult> {
     if (!hasSupabaseConfig)
-        return { ok: true, message: 'Alert usunięty w trybie demo.' };
+        return {
+            ok: true,
+            message: alertTranslations.actions.deletedDemo,
+        };
     try {
         const user = await requireWhitelistedUser();
         const supabase = await createSupabaseServerClient();
@@ -149,11 +180,21 @@ export async function deleteAlert(id: string): Promise<AlertActionResult> {
             .select('id')
             .maybeSingle();
         if (error) throw error;
-        if (!data) return { ok: false, message: 'Nie znaleziono alertu.' };
+        if (!data)
+            return {
+                ok: false,
+                message: alertTranslations.actions.notFound,
+            };
         revalidatePath('/');
-        return { ok: true, message: 'Alert został usunięty.' };
+        return {
+            ok: true,
+            message: alertTranslations.actions.deleted,
+        };
     } catch (error) {
         console.error('Delete alert failed', error);
-        return { ok: false, message: 'Nie udało się usunąć alertu.' };
+        return {
+            ok: false,
+            message: alertTranslations.actions.deleteFailed,
+        };
     }
 }

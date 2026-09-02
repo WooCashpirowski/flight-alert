@@ -11,6 +11,7 @@ import { notFound } from 'next/navigation';
 import { AlertActions } from '@/src/modules/alerts/components/alert-actions';
 import { getDashboardData } from '@/src/modules/alerts/queries';
 import { formatPrice } from '@/src/shared/lib/utils';
+import { alertTranslations } from '@/src/translations/pl/alerts';
 
 export default async function AlertDetailPage({
     params,
@@ -32,12 +33,14 @@ export default async function AlertDetailPage({
                 <Link
                     className='icon-button'
                     href='/'
-                    aria-label='Wróć do panelu'
+                    aria-label={alertTranslations.details.backToDashboard}
                 >
                     <ArrowLeft size={19} />
                 </Link>
                 <div>
-                    <p className='eyebrow'>SZCZEGÓŁY ALERTU</p>
+                    <p className='eyebrow'>
+                        {alertTranslations.details.eyebrow}
+                    </p>
                     <h1>
                         {alert.origin} → {alert.destination}
                     </h1>
@@ -45,7 +48,7 @@ export default async function AlertDetailPage({
                 <Link
                     className='icon-button header-action'
                     href={`/alerts/${id}/edit`}
-                    aria-label='Edytuj alert'
+                    aria-label={alertTranslations.details.editAria}
                 >
                     <Pencil size={17} />
                 </Link>
@@ -53,8 +56,7 @@ export default async function AlertDetailPage({
             <section className='detail-hero'>
                 <PlaneTakeoff size={26} />
                 <p>
-                    Monitorujemy tę trasę raz dziennie i połączymy wszystkie
-                    znalezione okazje w jedno powiadomienie.
+                    {alertTranslations.details.description}
                 </p>
             </section>
             <div className='detail-grid'>
@@ -67,20 +69,27 @@ export default async function AlertDetailPage({
                         </h2>
                         <p>
                             {alert.flexDays
-                                ? `Elastyczność ±${alert.flexDays} dni`
-                                : 'Dokładne daty'}
+                                ? alertTranslations.details.flexibility(
+                                      alert.flexDays,
+                                  )
+                                : alertTranslations.details.exactDates}
                         </p>
                     </div>
                 </section>
                 <section className='settings-card'>
                     <Gauge />
                     <div>
-                        <h2>Limit {formatPrice(alert.maxPrice)}</h2>
+                        <h2>
+                            {alertTranslations.details.limit(
+                                formatPrice(alert.maxPrice),
+                            )}
+                        </h2>
                         <p>
-                            Najlepsza cena:{' '}
-                            {alert.bestPrice
-                                ? formatPrice(alert.bestPrice)
-                                : 'jeszcze szukamy'}
+                            {alertTranslations.details.bestPrice(
+                                alert.bestPrice
+                                    ? formatPrice(alert.bestPrice)
+                                    : alertTranslations.details.searching,
+                            )}
                         </p>
                     </div>
                 </section>
@@ -93,9 +102,11 @@ export default async function AlertDetailPage({
                     rel='noreferrer'
                 >
                     <span>
-                        <small>NAJLEPSZA ZNALEZIONA OFERTA</small>
+                        <small>{alertTranslations.details.bestOffer}</small>
                         <strong>
-                            {alert.bestProvider ?? 'Sprawdź ofertę'} ·{' '}
+                            {alert.bestProvider ??
+                                alertTranslations.details.checkOffer}{' '}
+                            ·{' '}
                             {alert.bestPrice
                                 ? formatPrice(alert.bestPrice)
                                 : ''}

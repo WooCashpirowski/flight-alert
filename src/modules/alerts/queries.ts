@@ -1,6 +1,7 @@
 import { hasSupabaseConfig } from '@/src/shared/lib/env';
 import { createSupabaseServerClient } from '@/src/shared/lib/supabase/server';
 import { getWhitelistedUser } from '@/src/modules/auth/guard';
+import { alertTranslations } from '@/src/translations/pl/alerts';
 
 export type DashboardAlert = {
     id: string;
@@ -54,13 +55,18 @@ export async function getDashboardData(): Promise<{
     if (!hasSupabaseConfig)
         return {
             alerts: demoAlerts,
-            name: 'Podróżniku',
+            name: alertTranslations.defaultTravelerName,
             email: null,
             demo: true,
         };
     const user = await getWhitelistedUser();
     if (!user)
-        return { alerts: [], name: 'Podróżniku', email: null, demo: false };
+        return {
+            alerts: [],
+            name: alertTranslations.defaultTravelerName,
+            email: null,
+            demo: false,
+        };
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase
         .from('alerts')
@@ -72,7 +78,9 @@ export async function getDashboardData(): Promise<{
         console.error('Load alerts failed', error);
         return {
             alerts: [],
-            name: user.email?.split('@')[0] ?? 'Podróżniku',
+            name:
+                user.email?.split('@')[0] ??
+                alertTranslations.defaultTravelerName,
             email: user.email ?? null,
             demo: false,
         };
@@ -95,7 +103,7 @@ export async function getDashboardData(): Promise<{
         name:
             user.user_metadata.full_name ??
             user.email?.split('@')[0] ??
-            'Podróżniku',
+            alertTranslations.defaultTravelerName,
         email: user.email ?? null,
         demo: false,
     };

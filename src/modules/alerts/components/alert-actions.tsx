@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import { LoaderCircle, Pause, Play, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { deleteAlert, toggleAlert } from '@/src/modules/alerts/actions';
+import { alertTranslations } from '@/src/translations/pl/alerts';
 
 export function AlertActions({ id, active }: { id: string; active: boolean }) {
     const router = useRouter();
@@ -20,7 +21,7 @@ export function AlertActions({ id, active }: { id: string; active: boolean }) {
     }
 
     function remove() {
-        if (!window.confirm('Usunąć ten alert? Tej operacji nie można cofnąć.'))
+        if (!window.confirm(alertTranslations.controls.deleteConfirmation))
             return;
         setMessage(undefined);
         startTransition(async () => {
@@ -47,7 +48,9 @@ export function AlertActions({ id, active }: { id: string; active: boolean }) {
                 ) : (
                     <Play size={16} />
                 )}
-                {active ? 'Wstrzymaj alert' : 'Wznów alert'}
+                {active
+                    ? alertTranslations.controls.pause
+                    : alertTranslations.controls.resume}
             </button>
             <button
                 type='button'
@@ -55,7 +58,7 @@ export function AlertActions({ id, active }: { id: string; active: boolean }) {
                 disabled={isPending}
                 onClick={remove}
             >
-                <Trash2 size={16} /> Usuń
+                <Trash2 size={16} /> {alertTranslations.controls.delete}
             </button>
             {message && (
                 <p className='form-message' role='status'>

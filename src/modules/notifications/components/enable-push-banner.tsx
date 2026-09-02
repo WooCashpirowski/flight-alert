@@ -2,6 +2,7 @@
 
 import { BellRing, LoaderCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { notificationTranslations } from '@/src/translations/pl/notifications';
 
 function vapidKey(value: string) {
     const padding = '='.repeat((4 - (value.length % 4)) % 4);
@@ -17,8 +18,8 @@ export function EnablePushBanner() {
     const [status, setStatus] = useState<
         'checking' | 'idle' | 'loading' | 'enabled' | 'error'
     >('checking');
-    const [message, setMessage] = useState(
-        'Włącz powiadomienia i dowiedz się jako pierwszy.',
+    const [message, setMessage] = useState<string>(
+        notificationTranslations.banner.initialMessage,
     );
 
     useEffect(() => {
@@ -59,16 +60,18 @@ export function EnablePushBanner() {
         setStatus('loading');
         try {
             if (!('serviceWorker' in navigator) || !('PushManager' in window))
-                throw new Error('Ta przeglądarka nie obsługuje Web Push.');
+                throw new Error(
+                    notificationTranslations.banner.unsupportedBrowser,
+                );
             const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
             if (!publicKey)
                 throw new Error(
-                    'Powiadomienia będą dostępne po konfiguracji VAPID.',
+                    notificationTranslations.banner.missingVapid,
                 );
             const permission = await Notification.requestPermission();
             if (permission !== 'granted')
                 throw new Error(
-                    'Zezwolenie na powiadomienia nie zostało udzielone.',
+                    notificationTranslations.banner.permissionDenied,
                 );
             const registration = await navigator.serviceWorker.ready;
             const existing = await registration.pushManager.getSubscription();
@@ -84,14 +87,16 @@ export function EnablePushBanner() {
                 body: JSON.stringify(subscription.toJSON()),
             });
             if (!response.ok)
-                throw new Error('Nie udało się zapisać urządzenia.');
+                throw new Error(
+                    notificationTranslations.banner.deviceSaveFailed,
+                );
             setStatus('enabled');
         } catch (error) {
             setStatus('error');
             setMessage(
                 error instanceof Error
                     ? error.message
-                    : 'Nie udało się włączyć powiadomień.',
+                    : notificationTranslations.banner.enableFailed,
             );
         }
     }
@@ -104,7 +109,7 @@ export function EnablePushBanner() {
                 <BellRing size={18} />
             </span>
             <div>
-                <strong>Nie przegap spadku ceny</strong>
+                <strong>{notificationTranslations.banner.title}</strong>
                 <p>{message}</p>
             </div>
             <button
@@ -115,7 +120,7 @@ export function EnablePushBanner() {
                 {status === 'loading' ? (
                     <LoaderCircle className='spin' size={15} />
                 ) : (
-                    'Włącz'
+                    notificationTranslations.banner.enable
                 )}
             </button>
         </aside>

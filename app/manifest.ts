@@ -1,8 +1,35 @@
-import type { MetadataRoute } from "next";
+import type { MetadataRoute } from 'next';
+import { appTranslations } from '@/src/translations/pl/app';
 export default function manifest(): MetadataRoute.Manifest {
-  return { name: "Flight Alert", short_name: "Flight Alert", description: "Prywatne alerty cenowe lotów", start_url: "/", display: "standalone", background_color: "#07100d", theme_color: "#07100d", orientation: "portrait-primary", categories: ["travel", "utilities"], icons: [
-    { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
-    { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
-    { src: "/icons/icon-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
-  ] };
+    return {
+        name: appTranslations.common.name,
+        short_name: appTranslations.common.name,
+        description: appTranslations.metadata.manifestDescription,
+        start_url: '/',
+        display: 'standalone',
+        background_color: '#07100d',
+        theme_color: '#07100d',
+        orientation: 'portrait-primary',
+        categories: ['travel', 'utilities'],
+        icons: [
+            {
+                src: '/icons/icon-192.png',
+                sizes: '192x192',
+                type: 'image/png',
+                purpose: 'any',
+            },
+            {
+                src: '/icons/icon-512.png',
+                sizes: '512x512',
+                type: 'image/png',
+                purpose: 'any',
+            },
+            {
+                src: '/icons/icon-maskable-512.png',
+                sizes: '512x512',
+                type: 'image/png',
+                purpose: 'maskable',
+            },
+        ],
+    };
 }

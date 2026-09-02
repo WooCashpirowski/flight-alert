@@ -21,12 +21,17 @@ import {
     type FieldErrors,
 } from 'react-hook-form';
 import { createAlert, updateAlert } from '@/src/modules/alerts/actions';
-import { airports } from '@/src/modules/alerts/airports';
 import {
     CreateAlertSchema,
     type CreateAlertFormInput,
     type CreateAlertInput,
 } from '@/src/modules/alerts/schemas';
+import {
+    airportTranslations,
+    alertTranslations,
+} from '@/src/translations/pl/alerts';
+import { appTranslations } from '@/src/translations/pl/app';
+import { i18nConfig } from '@/src/shared/i18n/config';
 
 export type EditableAlert = CreateAlertInput & { id: string };
 
@@ -46,7 +51,7 @@ function firstErrorMessage(errors: FieldErrors<CreateAlertFormInput>) {
         )
             return error.message;
     }
-    return 'Sprawdź zaznaczone pola.';
+    return alertTranslations.validation.checkFields;
 }
 
 export function AlertForm({ alert }: { alert?: EditableAlert }) {
@@ -119,15 +124,21 @@ export function AlertForm({ alert }: { alert?: EditableAlert }) {
                 <Link
                     href={alert ? `/alerts/${alert.id}` : '/'}
                     className='icon-button'
-                    aria-label='Wróć'
+                    aria-label={appTranslations.common.back}
                 >
                     <ArrowLeft size={19} />
                 </Link>
                 <div>
                     <p className='eyebrow'>
-                        {alert ? 'EDYCJA ALERTU' : 'NOWE WYSZUKIWANIE'}
+                        {alert
+                            ? alertTranslations.form.editEyebrow
+                            : alertTranslations.form.createEyebrow}
                     </p>
-                    <h1>{alert ? 'Edytuj alert' : 'Dodaj alert'}</h1>
+                    <h1>
+                        {alert
+                            ? alertTranslations.form.editTitle
+                            : alertTranslations.form.createTitle}
+                    </h1>
                 </div>
             </header>
             <form
@@ -139,13 +150,13 @@ export function AlertForm({ alert }: { alert?: EditableAlert }) {
                     <div className='form-section-title'>
                         <MapPin size={18} />
                         <div>
-                            <h2>Trasa</h2>
-                            <p>Skąd i dokąd chcesz polecieć?</p>
+                            <h2>{alertTranslations.form.routeTitle}</h2>
+                            <p>{alertTranslations.form.routeDescription}</p>
                         </div>
                     </div>
                     <div className='field-grid'>
                         <label>
-                            Wylot
+                            {alertTranslations.form.origin}
                             <div className='field-control'>
                                 <Plane size={16} />
                                 <input
@@ -165,13 +176,13 @@ export function AlertForm({ alert }: { alert?: EditableAlert }) {
                         <button
                             className='swap-button'
                             type='button'
-                            aria-label='Zamień lotniska'
+                            aria-label={alertTranslations.form.swapAirports}
                             onClick={swapAirports}
                         >
                             ⇄
                         </button>
                         <label>
-                            Przylot
+                            {alertTranslations.form.destination}
                             <div className='field-control'>
                                 <Search size={16} />
                                 <input
@@ -190,7 +201,7 @@ export function AlertForm({ alert }: { alert?: EditableAlert }) {
                         </label>
                     </div>
                     <datalist id='airports'>
-                        {airports.map((airport) => (
+                        {airportTranslations.map((airport) => (
                             <option key={airport.code} value={airport.code}>
                                 {airport.city} — {airport.name}
                             </option>
@@ -201,8 +212,8 @@ export function AlertForm({ alert }: { alert?: EditableAlert }) {
                     <div className='form-section-title'>
                         <Plane size={18} />
                         <div>
-                            <h2>Typ podróży</h2>
-                            <p>Jedna czy dwie strony?</p>
+                            <h2>{alertTranslations.form.tripTypeTitle}</h2>
+                            <p>{alertTranslations.form.tripTypeDescription}</p>
                         </div>
                     </div>
                     <Controller
@@ -218,7 +229,13 @@ export function AlertForm({ alert }: { alert?: EditableAlert }) {
                                         onChange={() => field.onChange(true)}
                                     />
                                     <span>
-                                        W obie strony <small>RT</small>
+                                        {alertTranslations.form.roundTrip}{' '}
+                                        <small>
+                                            {
+                                                alertTranslations.form
+                                                    .roundTripAbbreviation
+                                            }
+                                        </small>
                                     </span>
                                 </label>
                                 <label>
@@ -229,7 +246,13 @@ export function AlertForm({ alert }: { alert?: EditableAlert }) {
                                         onChange={() => field.onChange(false)}
                                     />
                                     <span>
-                                        Jedna strona <small>OW</small>
+                                        {alertTranslations.form.oneWay}{' '}
+                                        <small>
+                                            {
+                                                alertTranslations.form
+                                                    .oneWayAbbreviation
+                                            }
+                                        </small>
                                     </span>
                                 </label>
                             </div>
@@ -245,13 +268,13 @@ export function AlertForm({ alert }: { alert?: EditableAlert }) {
                     <div className='form-section-title'>
                         <CalendarDays size={18} />
                         <div>
-                            <h2>Daty</h2>
-                            <p>Podaj termin i elastyczność.</p>
+                            <h2>{alertTranslations.form.datesTitle}</h2>
+                            <p>{alertTranslations.form.datesDescription}</p>
                         </div>
                     </div>
                     <div className='two-columns'>
                         <label>
-                            Data wylotu
+                            {alertTranslations.form.departureDate}
                             <div className='field-control'>
                                 <input
                                     type='date'
@@ -267,7 +290,7 @@ export function AlertForm({ alert }: { alert?: EditableAlert }) {
                         </label>
                         {roundTrip && (
                             <label>
-                                Data powrotu
+                                {alertTranslations.form.returnDate}
                                 <div className='field-control'>
                                     <input
                                         type='date'
@@ -286,14 +309,18 @@ export function AlertForm({ alert }: { alert?: EditableAlert }) {
                         )}
                     </div>
                     <label className='top-gap'>
-                        Elastyczność dat
+                        {alertTranslations.form.dateFlexibility}
                         <select
                             {...register('flexDays', { valueAsNumber: true })}
                         >
-                            <option value={0}>Dokładne daty</option>
-                            <option value={1}>±1 dzień</option>
-                            <option value={2}>±2 dni</option>
-                            <option value={3}>±3 dni</option>
+                            <option value={0}>
+                                {alertTranslations.form.exactDates}
+                            </option>
+                            {[1, 2, 3].map((days) => (
+                                <option key={days} value={days}>
+                                    {alertTranslations.form.flexDays(days)}
+                                </option>
+                            ))}
                         </select>
                     </label>
                 </section>
@@ -301,12 +328,14 @@ export function AlertForm({ alert }: { alert?: EditableAlert }) {
                     <div className='form-section-title'>
                         <CircleDollarSign size={18} />
                         <div>
-                            <h2>Limit ceny</h2>
-                            <p>Powiadomimy Cię poniżej tej kwoty.</p>
+                            <h2>{alertTranslations.form.priceLimitTitle}</h2>
+                            <p>
+                                {alertTranslations.form.priceLimitDescription}
+                            </p>
                         </div>
                     </div>
                     <label>
-                        Maksymalna cena
+                        {alertTranslations.form.maxPrice}
                         <div className='price-input'>
                             <input
                                 type='number'
@@ -317,7 +346,7 @@ export function AlertForm({ alert }: { alert?: EditableAlert }) {
                                 })}
                                 aria-invalid={Boolean(errors.maxPrice)}
                             />
-                            <span>PLN</span>
+                            <span>{i18nConfig.currency}</span>
                         </div>
                         {errors.maxPrice && (
                             <span className='field-error'>
@@ -327,8 +356,8 @@ export function AlertForm({ alert }: { alert?: EditableAlert }) {
                     </label>
                     <label className='toggle-row'>
                         <span>
-                            <strong>Alert aktywny</strong>
-                            <small>Skanowanie raz dziennie</small>
+                            <strong>{alertTranslations.form.active}</strong>
+                            <small>{alertTranslations.form.dailyScan}</small>
                         </span>
                         <input
                             type='checkbox'
@@ -352,7 +381,9 @@ export function AlertForm({ alert }: { alert?: EditableAlert }) {
                     ) : (
                         <Check size={18} />
                     )}{' '}
-                    {alert ? 'Zapisz zmiany' : 'Zapisz alert'}
+                    {alert
+                        ? alertTranslations.form.saveChanges
+                        : alertTranslations.form.saveAlert}
                 </button>
             </form>
         </main>

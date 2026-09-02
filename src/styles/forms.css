@@ -85,12 +85,16 @@
 
 .field-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 2.75rem minmax(0, 1fr);
-    gap: 0.5rem;
-    align-items: end;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.65rem;
 }
 
-.field-grid label {
+.field-grid > * {
+    min-width: 0;
+}
+
+.airport-combobox {
+    position: relative;
     min-width: 0;
 }
 
@@ -132,6 +136,101 @@
     text-transform: uppercase;
 }
 
+.field-control .airport-combobox-input {
+    text-transform: none;
+    text-overflow: ellipsis;
+}
+
+.airport-combobox-control {
+    position: relative;
+}
+
+.airport-combobox-loader {
+    flex: 0 0 auto;
+}
+
+.airport-combobox-list {
+    position: absolute;
+    z-index: 12;
+    top: calc(100% + 0.45rem);
+    left: 0;
+    width: 100%;
+    max-height: min(22rem, 55dvh);
+    overflow-y: auto;
+    padding: 0.35rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 0.9rem;
+    background: #0d1b15;
+    box-shadow: 0 1rem 2.8rem rgba(0, 0, 0, 0.42);
+}
+
+.airport-combobox-option {
+    width: 100%;
+    display: grid;
+    gap: 0.2rem;
+    padding: 0.72rem 0.75rem;
+    border: 0;
+    border-radius: 0.65rem;
+    background: transparent;
+    color: var(--text);
+    text-align: left;
+}
+
+.airport-combobox-option:hover,
+.airport-combobox-option[aria-selected='true'] {
+    background: var(--accent-soft);
+}
+
+.airport-combobox-option:focus-visible {
+    outline: 0.15rem solid var(--accent);
+    outline-offset: -0.15rem;
+}
+
+.airport-option-heading {
+    min-width: 0;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.7rem;
+}
+
+.airport-option-heading strong {
+    min-width: 0;
+    overflow: hidden;
+    font-size: 0.9rem;
+    font-weight: 620;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.airport-option-heading > span {
+    flex: 0 0 auto;
+    padding: 0.12rem 0.38rem;
+    border: 1px solid rgba(143, 224, 181, 0.2);
+    border-radius: 0.35rem;
+    color: var(--accent);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+}
+
+.airport-combobox-option small {
+    overflow: hidden;
+    color: var(--muted);
+    font-size: 0.72rem;
+    line-height: 1.35;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.airport-combobox-empty {
+    margin: 0;
+    padding: 0.85rem 0.75rem;
+    color: var(--muted);
+    font-size: 0.78rem;
+    line-height: 1.45;
+}
+
 .field-control input[type='date'] {
     text-transform: none;
     color-scheme: dark;
@@ -148,6 +247,7 @@
 .swap-button {
     width: 2.75rem;
     height: 3.25rem;
+    justify-self: center;
     border: 1px solid var(--line);
     border-radius: 0.85rem;
     background: var(--accent-soft);
@@ -633,6 +733,16 @@
 
     .form-section {
         padding-block: 2rem 2.15rem;
+    }
+
+    .field-grid {
+        grid-template-columns: minmax(0, 1fr) 2.75rem minmax(0, 1fr);
+        gap: 0.5rem;
+        align-items: end;
+    }
+
+    .swap-button {
+        justify-self: auto;
     }
 
     .two-columns,

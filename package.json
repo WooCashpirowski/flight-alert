@@ -13,6 +13,7 @@
         "e2e": "playwright test",
         "e2emobile": "playwright test --project=mobile-chromium",
         "e2elive": "node --env-file=.env.local --env-file=.env.test.local scripts/live-smoke.mjs",
+        "airports": "node scripts/generate-airport-catalog.mjs",
         "icons": "node scripts/generate-icons.mjs"
     },
     "dependencies": {

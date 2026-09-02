@@ -86,8 +86,8 @@ Pozostałe trasy wymagają aktywnej, dozwolonej sesji, jeśli Supabase jest skon
 
 Formularz `/alerts/new` zawiera:
 
-- kod lotniska wylotu, domyślnie `WAW`;
-- kod lotniska docelowego, domyślnie `BCN`; obsługiwane jest również `ANY`;
+- wyszukiwalne lotnisko wylotu, domyślnie `Warszawa (WAW)`;
+- wyszukiwalne lotnisko docelowe, domyślnie `Barcelona (BCN)`; obsługiwane jest również `ANY`;
 - przycisk zamiany lotniska wylotu i przylotu;
 - typ podróży: domyślnie **W obie strony**, opcjonalnie jedna strona;
 - datę wylotu, domyślnie 21 dni od bieżącej daty;
@@ -97,6 +97,10 @@ Formularz `/alerts/new` zawiera:
 - przełącznik aktywności alertu.
 
 React Hook Form i Zod walidują formularz po stronie klienta. Ta sama definicja Zod jest ponownie sprawdzana w Server Action. Dla podróży w obie strony data powrotu jest obowiązkowa i nie może poprzedzać daty wylotu. Cena musi być większa od zera.
+
+Pola lotnisk korzystają z własnego dostępnego comboboxa. Wyszukiwanie działa po kodzie IATA, mieście, nazwie lotniska, państwie oraz aliasach, bez rozróżniania wielkości liter i polskich znaków. Wybrana wartość jest prezentowana jako `Miasto (IATA)`, natomiast formularz i baza nadal przechowują wyłącznie 3-literowy kod. Kod spoza katalogu można zatwierdzić jawnie jako ręczną wartość.
+
+Globalny katalog jest przechowywany jako wygenerowany snapshot w repozytorium i ładowany wyłącznie na stronie formularza. Obejmuje lotniska z kodem IATA i regularnymi połączeniami z publicznego zbioru OurAirports. Nazwy państw są lokalizowane na polski, a dotychczasowe polskie nazwy popularnych lotnisk są zachowane jako etykiety i aliasy. Produkcyjna wyszukiwarka lotnisk nie wykonuje zapytań do zewnętrznego API. Snapshot można odświeżyć poleceniem `pnpm airports`.
 
 Po poprawnym zapisie użytkownik wraca do panelu, gdzie nowy alert jest natychmiast widoczny.
 
@@ -204,6 +208,7 @@ Tabela `notification_dispatches` i unikalność `(user_id, dispatch_date)` zapob
 - Alerty mają stale widoczne filtry `Wszystkie`, `Aktywne` i `Wstrzymane`, jednoznaczną hierarchię trasa → termin → cena oraz czytelne stany aktywny i wstrzymany.
 - UI używa Outfit Variable, jednego miętowego akcentu, ciemnych powierzchni o ograniczonej liczbie obramowań i ikon Lucide.
 - Formularze są budowane jako ciągła powierzchnia z separatorami, natywnie dostępnymi polami, własnym przełącznikiem i przyklejoną główną akcją na telefonie.
+- Pola trasy są układane pionowo na telefonie i używają comboboxa obsługiwanego myszą, dotykiem oraz klawiaturą; na większych ekranach wracają do układu poziomego.
 - Wszystkie istotne elementy interaktywne mają widoczny `focus-visible`; zakładki logowania i dialog usuwania obsługują klawiaturę, a interfejs nie blokuje powiększania strony.
 - GSAP jest używany wyłącznie na desktopowym panelu do przypięcia podsumowania i subtelnego wejścia kart. `prefers-reduced-motion` wyłącza animacje, a telefon zachowuje statyczną, lekką ścieżkę renderowania.
 - Style są rozdzielone na fundamenty, panel, formularze i uwierzytelnianie w `src/styles/`.
@@ -259,7 +264,7 @@ app/
 └── manifest.ts
 
 src/modules/
-├── alerts/               # schematy, zapytania, Server Actions i UI alertów
+├── alerts/               # schematy, katalog lotnisk, wyszukiwanie, Server Actions i UI alertów
 ├── auth/                 # logowanie, rejestracja, hasło, guard i profil
 ├── flight-search/        # wspólny serwis i adaptery dostawców
 ├── notifications/        # skan dzienny, Web Push i banner aktywacji
@@ -277,7 +282,7 @@ src/styles/               # fundamenty wizualne oraz style panelu, formularzy i 
 public/                   # service worker, ikony i grafika Open Graph
 supabase/migrations/      # migracje 0001 i 0002
 tests/                    # testy Playwright
-scripts/                  # generator ikon i rzeczywisty smoke test
+scripts/                  # generatory katalogu lotnisk i ikon oraz rzeczywisty smoke test
 ```
 
 ## 11. Zmienne środowiskowe
@@ -332,14 +337,16 @@ pnpm e2emobile
 pnpm e2elive
 ```
 
+Polecenie `pnpm airports` odświeża commitowany katalog lotnisk z OurAirports i nie jest wykonywane podczas buildu ani działania produkcji.
+
 `pnpm e2elive` loguje się prawdziwym kontem testowym, sprawdza uwierzytelnianie, tworzy alert, uruchamia rzeczywisty skan SerpApi, sprawdza zapis ceny i linku oferty, edytuje oraz przełącza alert, testuje PWA i sprząta utworzone dane. Hasło testowe jest przywracane w bloku końcowym.
 
 Ostatnia weryfikacja bieżącego repozytorium:
 
 - lint: zaliczony;
 - produkcyjny build Next.js: zaliczony;
-- Playwright mobile: 6/6 testów zaliczonych;
-- Playwright mobile + desktop: 12/12 testów zaliczonych, w tym obsługa klawiatury, dialogu usuwania, zoomu i ograniczenia ruchu;
+- Playwright mobile: 7/7 testów zaliczonych;
+- Playwright mobile + desktop: 14/14 testów zaliczonych, w tym wyszukiwanie lotnisk po mieście i państwie, ręczny kod IATA, obsługa klawiatury, dialogu usuwania, zoomu i ograniczenia ruchu;
 - live smoke: 11 zaliczonych, 0 błędów, 1 punkt zablokowany przez ograniczenie Web Push w headless Chromium;
 - fizyczne dostarczenie i otwarcie Web Push: potwierdzone manualnie;
 - migracja `0002_offer_details.sql`: potwierdzona w Supabase;
@@ -353,6 +360,7 @@ Ostatnia weryfikacja bieżącego repozytorium:
 - Adapter Amadeus nie jest używany w aktywnej konfiguracji.
 - Test dostarczenia Web Push wymaga fizycznej przeglądarki lub zainstalowanej PWA; headless Chromium nie zapewnia prawdziwego endpointu push.
 - Elastyczne daty są rotowane między skanami, a nie przeszukiwane wyczerpująco w jednym uruchomieniu.
+- Katalog lotnisk jest snapshotem aktualizowanym ręcznie. Lotnisko z regularnymi połączeniami, którego nie ma jeszcze w katalogu, można nadal podać przez jawne zatwierdzenie jego kodu IATA.
 - Ostrzeżenie Next.js o przestarzałej konwencji `middleware.ts` nie blokuje kompilacji, ale plik powinien zostać w przyszłości zmigrowany do konwencji `proxy.ts`.
 
 ## 15. Zasady dalszego rozwoju

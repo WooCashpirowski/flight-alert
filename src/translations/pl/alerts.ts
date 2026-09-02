@@ -1,7 +1,7 @@
 export const alertTranslations = {
     validation: {
-        origin: 'Podaj 3-literowy kod lotniska',
-        destination: 'Podaj 3-literowy kod lub ANY',
+        origin: 'Wybierz lotnisko lub wpisz 3-literowy kod IATA',
+        destination: 'Wybierz lotnisko, kod IATA lub dowolne miejsce',
         departureDate: 'Wybierz datę wylotu',
         returnDate: 'Wybierz poprawną datę',
         positivePrice: 'Cena musi być większa od 0',
@@ -39,6 +39,14 @@ export const alertTranslations = {
         origin: 'Wylot',
         swapAirports: 'Zamień lotniska',
         destination: 'Przylot',
+        airportPlaceholder: 'Miasto, państwo lub kod',
+        airportSuggestions: 'Podpowiedzi lotnisk',
+        loadingAirports: 'Wczytywanie lotnisk',
+        noAirportsFound: 'Nie znaleziono pasujących lotnisk.',
+        useAirportCode: (code: string) => `Użyj kodu ${code}`,
+        externalAirportCode: 'Kod IATA spoza katalogu',
+        anywhere: 'Dowolne miejsce',
+        anywhereDescription: 'Najtańszy kierunek',
         tripTypeTitle: 'Typ podróży',
         tripTypeDescription: 'Jedna czy dwie strony?',
         roundTrip: 'W obie strony',
@@ -114,21 +122,3 @@ export const alertTranslations = {
     },
     defaultTravelerName: 'Podróżniku',
 } as const;
-
-export const airportTranslations = [
-    { code: 'WAW', city: 'Warszawa', name: 'Lotnisko Chopina' },
-    { code: 'WMI', city: 'Warszawa', name: 'Modlin' },
-    { code: 'KRK', city: 'Kraków', name: 'Balice' },
-    { code: 'GDN', city: 'Gdańsk', name: 'Rębiechowo' },
-    { code: 'KTW', city: 'Katowice', name: 'Pyrzowice' },
-    { code: 'WRO', city: 'Wrocław', name: 'Strachowice' },
-    { code: 'POZ', city: 'Poznań', name: 'Ławica' },
-    { code: 'FCO', city: 'Rzym', name: 'Fiumicino' },
-    { code: 'CIA', city: 'Rzym', name: 'Ciampino' },
-    { code: 'BCN', city: 'Barcelona', name: 'El Prat' },
-    { code: 'GRO', city: 'Girona', name: 'Costa Brava' },
-    { code: 'LIS', city: 'Lizbona', name: 'Humberto Delgado' },
-    { code: 'PMI', city: 'Palma', name: 'Mallorca' },
-    { code: 'AGP', city: 'Malaga', name: 'Costa del Sol' },
-    { code: 'ANY', city: 'Dowolne miejsce', name: 'Najtańszy kierunek' },
-] as const;

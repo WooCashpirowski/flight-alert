@@ -67,11 +67,13 @@ test('alert form validates a round trip and can submit in demo mode', async ({
     await page.getByLabel('Elastyczność dat').selectOption('3');
     await expect(page.getByLabel('Elastyczność dat')).toHaveValue('3');
 
-    const origin = page.locator('input[name="origin"]');
-    const destination = page.locator('input[name="destination"]');
+    const origin = page.getByRole('combobox', { name: 'Wylot' });
+    const destination = page.getByRole('combobox', { name: 'Przylot' });
+    await expect(origin).toHaveValue('Warszawa (WAW)');
+    await expect(destination).toHaveValue('Barcelona (BCN)');
     await page.getByRole('button', { name: 'Zamień lotniska' }).click();
-    await expect(origin).toHaveValue('BCN');
-    await expect(destination).toHaveValue('WAW');
+    await expect(origin).toHaveValue('Barcelona (BCN)');
+    await expect(destination).toHaveValue('Warszawa (WAW)');
     await page.getByRole('button', { name: 'Zamień lotniska' }).click();
     const price = page.getByRole('spinbutton', { name: /Maksymalna cena/ });
     await price.fill('0');
@@ -83,6 +85,41 @@ test('alert form validates a round trip and can submit in demo mode', async ({
     await price.fill('700');
     await page.getByRole('button', { name: 'Zapisz alert' }).click();
     await expect(page.getByText(/trybie demo/)).toBeVisible();
+});
+
+test('airport search supports cities, countries, keyboard and manual codes', async ({
+    page,
+}) => {
+    await page.goto('/alerts/new');
+    const origin = page.getByRole('combobox', { name: 'Wylot' });
+    const destination = page.getByRole('combobox', { name: 'Przylot' });
+
+    await destination.fill('mal');
+    const malta = page.getByRole('option', {
+        name: /Valletta.*MLA.*Malta International Airport.*Malta/,
+    });
+    await expect(malta).toBeVisible();
+    await destination.fill('malta');
+    await expect(malta).toBeVisible();
+    await destination.press('Enter');
+    await expect(destination).toHaveValue('Valletta (MLA)');
+    await expect(destination).toHaveAttribute('aria-expanded', 'false');
+
+    await origin.fill('warszawa');
+    await expect(
+        page.getByRole('option', { name: /Warszawa.*WAW.*Lotnisko Chopina/ }),
+    ).toBeVisible();
+    await origin.press('Escape');
+    await expect(origin).toHaveAttribute('aria-expanded', 'false');
+
+    await origin.fill('zzz');
+    await page.getByRole('option', { name: /Użyj kodu ZZZ/ }).click();
+    await expect(origin).toHaveValue('ZZZ');
+
+    await destination.fill('wlochy');
+    await expect(
+        page.getByRole('listbox').getByRole('option').first(),
+    ).toContainText('Włochy');
 });
 
 test('alert details expose offer and management actions', async ({ page }) => {

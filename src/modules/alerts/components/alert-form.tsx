@@ -26,10 +26,8 @@ import {
     type CreateAlertFormInput,
     type CreateAlertInput,
 } from '@/src/modules/alerts/schemas';
-import {
-    airportTranslations,
-    alertTranslations,
-} from '@/src/translations/pl/alerts';
+import { AirportCombobox } from '@/src/modules/alerts/components/airport-combobox';
+import { alertTranslations } from '@/src/translations/pl/alerts';
 import { appTranslations } from '@/src/translations/pl/app';
 import { i18nConfig } from '@/src/shared/i18n/config';
 
@@ -60,6 +58,7 @@ export function AlertForm({ alert }: { alert?: EditableAlert }) {
     const [messageKind, setMessageKind] = useState<'success' | 'error'>(
         'error',
     );
+    const [routeFieldsVersion, setRouteFieldsVersion] = useState(0);
     const {
         register,
         handleSubmit,
@@ -98,6 +97,7 @@ export function AlertForm({ alert }: { alert?: EditableAlert }) {
             shouldDirty: true,
             shouldValidate: true,
         });
+        setRouteFieldsVersion((version) => version + 1);
     }
 
     async function submit(values: CreateAlertInput) {
@@ -150,24 +150,22 @@ export function AlertForm({ alert }: { alert?: EditableAlert }) {
                         </div>
                     </div>
                     <div className='field-grid'>
-                        <label>
-                            {alertTranslations.form.origin}
-                            <div className='field-control'>
-                                <Plane size={16} />
-                                <input
-                                    {...register('origin')}
-                                    list='airports'
-                                    maxLength={3}
-                                    autoCapitalize='characters'
-                                    aria-invalid={Boolean(errors.origin)}
+                        <Controller
+                            name='origin'
+                            control={control}
+                            render={({ field }) => (
+                                <AirportCombobox
+                                    key={`origin-${routeFieldsVersion}`}
+                                    id='origin-airport'
+                                    label={alertTranslations.form.origin}
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    onBlur={field.onBlur}
+                                    error={errors.origin?.message}
+                                    icon={<Plane size={16} />}
                                 />
-                            </div>
-                            {errors.origin && (
-                                <span className='field-error'>
-                                    {errors.origin.message}
-                                </span>
                             )}
-                        </label>
+                        />
                         <button
                             className='swap-button'
                             type='button'
@@ -176,32 +174,24 @@ export function AlertForm({ alert }: { alert?: EditableAlert }) {
                         >
                             ⇄
                         </button>
-                        <label>
-                            {alertTranslations.form.destination}
-                            <div className='field-control'>
-                                <Search size={16} />
-                                <input
-                                    {...register('destination')}
-                                    list='airports'
-                                    maxLength={3}
-                                    autoCapitalize='characters'
-                                    aria-invalid={Boolean(errors.destination)}
+                        <Controller
+                            name='destination'
+                            control={control}
+                            render={({ field }) => (
+                                <AirportCombobox
+                                    key={`destination-${routeFieldsVersion}`}
+                                    id='destination-airport'
+                                    label={alertTranslations.form.destination}
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    onBlur={field.onBlur}
+                                    error={errors.destination?.message}
+                                    icon={<Search size={16} />}
+                                    allowAny
                                 />
-                            </div>
-                            {errors.destination && (
-                                <span className='field-error'>
-                                    {errors.destination.message}
-                                </span>
                             )}
-                        </label>
+                        />
                     </div>
-                    <datalist id='airports'>
-                        {airportTranslations.map((airport) => (
-                            <option key={airport.code} value={airport.code}>
-                                {airport.city} — {airport.name}
-                            </option>
-                        ))}
-                    </datalist>
                 </section>
                 <section className='form-section'>
                     <div className='form-section-title'>

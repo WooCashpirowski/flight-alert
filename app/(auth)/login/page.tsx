@@ -13,7 +13,7 @@ export default async function LoginPage({
     const nextPath =
         next?.startsWith('/') && !next.startsWith('//') ? next : '/';
     return (
-        <main className='auth-page'>
+        <main className='auth-page' id='main-content'>
             <section className='auth-card'>
                 <div className='brand auth-brand'>
                     <span className='brand-app-icon'>
@@ -26,7 +26,6 @@ export default async function LoginPage({
                     </span>
                     <span>{appTranslations.common.name}</span>
                 </div>
-                <p className='eyebrow'>{authTranslations.page.eyebrow}</p>
                 <h1>
                     {authTranslations.page.titleFirstLine}
                     <br />

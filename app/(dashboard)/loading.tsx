@@ -4,6 +4,7 @@ export default function DashboardLoading() {
     return (
         <main
             className='route-loading'
+            id='main-content'
             aria-label={appTranslations.loading.page}
             aria-busy='true'
         >

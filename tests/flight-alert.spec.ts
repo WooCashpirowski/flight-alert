@@ -9,9 +9,21 @@ test('mobile dashboard exposes the primary journey', async ({ page }) => {
         page.getByRole('link', { name: /Nowy alert/ }).first(),
     ).toBeVisible();
     await expect(page.getByText('Alerty cenowe')).toBeVisible();
+    const firstRoute = page.getByRole('heading', { name: /WAW.*BCN/ });
+    await expect(firstRoute).toBeVisible();
+    const routeBox = await firstRoute.boundingBox();
+    const viewport = page.viewportSize();
+    expect(routeBox?.y).toBeLessThan(viewport?.height ?? 0);
     await page.getByRole('button', { name: 'Wszystkie' }).click();
     await page.getByRole('button', { name: 'Wstrzymane' }).click();
     await expect(page.getByText('Brak alertów w tej kategorii')).toBeVisible();
+    await page.getByRole('button', { name: 'Otwórz profil' }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toBeHidden();
+    await expect(
+        page.getByRole('button', { name: 'Otwórz profil' }),
+    ).toBeFocused();
     await page.getByRole('button', { name: 'Otwórz profil' }).click();
     await page.getByRole('button', { name: 'Wyloguj się' }).click();
     await expect(page).toHaveURL(/\/login$/);
@@ -31,7 +43,11 @@ test('login supports passwords and allowlisted registration', async ({
         page.getByRole('button', { name: 'Zaloguj się' }),
     ).toBeVisible();
 
-    await page.getByRole('tab', { name: 'Rejestracja' }).click();
+    await page.getByRole('tab', { name: 'Logowanie' }).press('ArrowRight');
+    await expect(page.getByRole('tab', { name: 'Rejestracja' })).toHaveAttribute(
+        'aria-selected',
+        'true',
+    );
     await expect(page.getByLabel('Powtórz hasło')).toBeVisible();
     await expect(
         page.getByRole('button', { name: 'Utwórz konto' }),
@@ -81,6 +97,13 @@ test('alert details expose offer and management actions', async ({ page }) => {
         page.getByRole('button', { name: 'Wstrzymaj alert' }),
     ).toBeVisible();
     await expect(page.getByRole('button', { name: 'Usuń' })).toBeVisible();
+    await page.getByRole('button', { name: 'Usuń' }).click();
+    await expect(page.getByRole('alertdialog')).toBeVisible();
+    await expect(
+        page.getByRole('button', { name: 'Usuń alert' }),
+    ).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('alertdialog')).toBeHidden();
     await page.getByRole('link', { name: 'Edytuj alert' }).click();
     await expect(
         page.getByRole('heading', { name: 'Edytuj alert' }),
@@ -88,6 +111,22 @@ test('alert details expose offer and management actions', async ({ page }) => {
     await expect(
         page.getByRole('radio', { name: /W obie strony/ }),
     ).toBeChecked();
+});
+
+test('accessibility preferences preserve zoom and reduce motion', async ({
+    page,
+}) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+    const viewportMeta = await page
+        .locator('meta[name="viewport"]')
+        .getAttribute('content');
+    expect(viewportMeta).not.toContain('maximum-scale');
+    await expect(page.locator('html')).toHaveCSS('scroll-behavior', 'auto');
+    const horizontalOverflow = await page.evaluate(
+        () => document.documentElement.scrollWidth > window.innerWidth,
+    );
+    expect(horizontalOverflow).toBeFalsy();
 });
 
 test('PWA manifest and service worker assets are available', async ({

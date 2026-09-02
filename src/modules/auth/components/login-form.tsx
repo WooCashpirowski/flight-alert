@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, type KeyboardEvent } from 'react';
 import { ArrowRight, LoaderCircle, LockKeyhole, Mail } from 'lucide-react';
 import {
     registerWithPassword,
@@ -27,6 +27,18 @@ export function LoginForm({ nextPath = '/' }: { nextPath?: string }) {
         setConfirmation('');
     }
 
+    function changeModeFromKeyboard(
+        event: KeyboardEvent<HTMLButtonElement>,
+    ) {
+        if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+        event.preventDefault();
+        const nextMode: Mode = mode === 'login' ? 'register' : 'login';
+        changeMode(nextMode);
+        requestAnimationFrame(() => {
+            document.getElementById(`auth-${nextMode}-tab`)?.focus();
+        });
+    }
+
     return (
         <>
             <div
@@ -35,24 +47,35 @@ export function LoginForm({ nextPath = '/' }: { nextPath?: string }) {
                 aria-label={authTranslations.form.accessMethod}
             >
                 <button
+                    id='auth-login-tab'
                     type='button'
                     role='tab'
                     aria-selected={mode === 'login'}
+                    aria-controls='auth-panel'
+                    tabIndex={mode === 'login' ? 0 : -1}
+                    onKeyDown={changeModeFromKeyboard}
                     onClick={() => changeMode('login')}
                 >
                     {authTranslations.form.loginTab}
                 </button>
                 <button
+                    id='auth-register-tab'
                     type='button'
                     role='tab'
                     aria-selected={mode === 'register'}
+                    aria-controls='auth-panel'
+                    tabIndex={mode === 'register' ? 0 : -1}
+                    onKeyDown={changeModeFromKeyboard}
                     onClick={() => changeMode('register')}
                 >
                     {authTranslations.form.registerTab}
                 </button>
             </div>
             <form
+                id='auth-panel'
                 className='auth-form'
+                role='tabpanel'
+                aria-labelledby={`auth-${mode}-tab`}
                 onSubmit={(event) => {
                     event.preventDefault();
                     setMessage(undefined);

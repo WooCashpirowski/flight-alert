@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { appTranslations } from '@/src/translations/pl/app';
 export default function OfflinePage() {
     return (
-        <main className='offline-page'>
+        <main className='offline-page' id='main-content'>
             <div className='brand-mark'>
                 <Plane size={20} />
             </div>

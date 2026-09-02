@@ -1,0 +1,239 @@
+.auth-page,
+.offline-page {
+    min-height: 100dvh;
+    width: 100%;
+    display: grid;
+    place-items: center;
+    padding: 1.5rem;
+    overflow-x: hidden;
+}
+
+.auth-page {
+    position: relative;
+    background:
+        radial-gradient(circle at 78% 12%, rgba(143, 224, 181, 0.13), transparent 30rem),
+        radial-gradient(circle at 5% 85%, rgba(57, 112, 82, 0.11), transparent 28rem);
+}
+
+.auth-card {
+    width: min(100%, 31rem);
+    padding: 2rem 1.35rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-xl);
+    background: rgba(12, 26, 20, 0.82);
+    box-shadow: var(--shadow-soft);
+    backdrop-filter: blur(1rem);
+}
+
+.auth-brand {
+    margin-bottom: 3.2rem;
+}
+
+.auth-card .eyebrow {
+    margin-bottom: 0.75rem;
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-weight: 500;
+    text-transform: lowercase;
+}
+
+.auth-card h1 {
+    max-width: 26rem;
+    margin-bottom: 1.2rem;
+    font-size: clamp(3rem, 13vw, 5rem);
+    line-height: 0.9;
+    letter-spacing: -0.065em;
+}
+
+.auth-copy {
+    max-width: 31rem;
+    margin-bottom: 0;
+    color: var(--muted-strong);
+    font-size: 0.95rem;
+    line-height: 1.65;
+}
+
+.auth-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.25rem;
+    margin-top: 1.7rem;
+    padding: 0.25rem;
+    border: 1px solid var(--line);
+    border-radius: 0.95rem;
+    background: rgba(5, 15, 10, 0.58);
+}
+
+.auth-tabs button {
+    min-height: 2.75rem;
+    border: 0;
+    border-radius: 0.7rem;
+    background: transparent;
+    color: var(--muted);
+    font-size: 0.84rem;
+    font-weight: 580;
+    transition: background-color 180ms ease, color 180ms ease;
+}
+
+.auth-tabs button:hover {
+    color: var(--text);
+}
+
+.auth-tabs button[aria-selected='true'] {
+    background: var(--accent-soft);
+    color: var(--accent);
+}
+
+.auth-form {
+    display: grid;
+    gap: 0.7rem;
+    margin-top: 1.8rem;
+}
+
+.auth-tabs + .auth-form {
+    margin-top: 1rem;
+}
+
+.auth-form > label {
+    color: var(--muted-strong);
+    font-size: 0.82rem;
+    font-weight: 550;
+}
+
+.auth-form .input-with-icon {
+    margin-top: -0.2rem;
+}
+
+.wide {
+    width: 100%;
+    margin-top: 0.25rem;
+}
+
+.security-note {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    margin: 1.5rem 0 0;
+    color: var(--muted);
+    font-size: 0.78rem;
+}
+
+.offline-page {
+    align-content: center;
+    text-align: center;
+}
+
+.brand-mark {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: grid;
+    place-items: center;
+    border-radius: 0.85rem;
+    background: var(--accent);
+    color: var(--accent-ink);
+    box-shadow: var(--shadow-accent);
+}
+
+.offline-page > .brand-mark {
+    margin: 0 auto 1.4rem;
+}
+
+.offline-page > svg {
+    margin: 0 auto 1rem;
+    color: var(--muted);
+}
+
+.offline-page h1 {
+    margin-bottom: 0.5rem;
+    font-size: clamp(2.5rem, 10vw, 4.5rem);
+    letter-spacing: -0.06em;
+}
+
+.offline-page p {
+    max-width: 23rem;
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.65;
+}
+
+.offline-page a {
+    display: inline-flex;
+    min-height: 2.85rem;
+    align-items: center;
+    margin-top: 0.7rem;
+    padding: 0 1rem;
+    border-radius: 0.8rem;
+    background: var(--accent);
+    color: var(--accent-ink);
+    font-size: 0.88rem;
+    font-weight: 700;
+}
+
+@media (min-width: 55rem) {
+    .auth-page {
+        place-items: center;
+        padding: 3rem;
+    }
+
+    .auth-card {
+        width: min(100%, 72rem);
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(23rem, 0.85fr);
+        column-gap: clamp(4rem, 8vw, 8rem);
+        padding: clamp(3rem, 6vw, 5.5rem);
+        border: 0;
+        background: transparent;
+        box-shadow: none;
+        backdrop-filter: none;
+    }
+
+    .auth-brand,
+    .auth-card > .eyebrow,
+    .auth-card > h1,
+    .auth-card > .auth-copy {
+        grid-column: 1;
+    }
+
+    .auth-brand {
+        align-self: start;
+    }
+
+    .auth-card > .eyebrow {
+        align-self: end;
+    }
+
+    .auth-card h1 {
+        font-size: clamp(4.8rem, 7.4vw, 7rem);
+    }
+
+    .auth-card > .auth-copy {
+        align-self: start;
+    }
+
+    .auth-card > .auth-tabs,
+    .auth-card > .auth-form,
+    .auth-card > .security-note {
+        grid-column: 2;
+    }
+
+    .auth-card > .auth-tabs {
+        grid-row: 1;
+        align-self: end;
+        margin-top: 0;
+    }
+
+    .auth-card > .auth-form {
+        grid-row: 2 / span 3;
+        align-self: center;
+        padding: 1.5rem;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-lg);
+        background: rgba(12, 26, 20, 0.78);
+        box-shadow: var(--shadow-soft);
+    }
+
+    .auth-card > .security-note {
+        grid-row: 5;
+    }
+}

@@ -3,6 +3,7 @@ import { Home, Plus, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { getDashboardData } from '@/src/modules/alerts/queries';
 import { AlertsSection } from '@/src/modules/alerts/components/alerts-section';
+import { DashboardMotion } from '@/src/modules/alerts/components/dashboard-motion';
 import { ProfileMenu } from '@/src/modules/auth/components/profile-menu';
 import { EnablePushBanner } from '@/src/modules/notifications/components/enable-push-banner';
 import { i18nConfig } from '@/src/shared/i18n/config';
@@ -33,17 +34,16 @@ export default async function DashboardPage() {
         weekday: 'long',
         day: 'numeric',
         month: 'long',
-    })
-        .format(now)
-        .toUpperCase();
+    }).format(now);
     const schedule = scanSchedule(now);
     const activeAlertsCount = alerts.filter((alert) => alert.active).length;
 
     return (
-        <main className='app-shell'>
+        <main className='app-shell' id='main-content'>
             <div className='ambient ambient-one' />
             <div className='ambient ambient-two' />
-            <section
+            <DashboardMotion />
+            <div
                 className='dashboard'
                 aria-label={appTranslations.dashboard.ariaLabel}
             >
@@ -59,60 +59,92 @@ export default async function DashboardPage() {
                         </span>
                         <span>{appTranslations.common.name}</span>
                     </Link>
+                    <nav
+                        className='desktop-nav'
+                        aria-label={appTranslations.dashboard.ariaLabel}
+                    >
+                        <Link className='selected' href='/'>
+                            {appTranslations.dashboard.navigation.dashboard}
+                        </Link>
+                        <Link href='/alerts/new'>
+                            {appTranslations.dashboard.navigation.newAlert}
+                        </Link>
+                        <Link href='/settings'>
+                            {appTranslations.dashboard.navigation.settings}
+                        </Link>
+                    </nav>
                     <ProfileMenu email={email} />
                 </header>
-                <div className='hero'>
-                    <div>
-                        <p className='eyebrow'>{date}</p>
+                <div className='dashboard-composition'>
+                    <aside className='dashboard-intro' data-dashboard-intro>
+                        <p className='date-line'>{date}</p>
                         <h1>{appTranslations.dashboard.greeting(name)}</h1>
                         <p className='hero-copy'>
                             {appTranslations.dashboard.hero}
                             {demo && appTranslations.dashboard.demoSuffix}
                         </p>
-                    </div>
-                    <Link className='primary-action' href='/alerts/new'>
-                        <Plus size={18} /> {appTranslations.dashboard.newAlert}
-                    </Link>
+                        <Link
+                            className='primary-action intro-action'
+                            href='/alerts/new'
+                        >
+                            <Plus size={18} />
+                            {appTranslations.dashboard.newAlert}
+                        </Link>
+                        <section className='scan-card'>
+                            <div className='radar' aria-hidden='true'>
+                                <span />
+                            </div>
+                            <div className='scan-copy'>
+                                <span className='status'>
+                                    <i />
+                                    {appTranslations.dashboard.scanActive}
+                                </span>
+                                <strong>
+                                    {appTranslations.dashboard.nextScan(
+                                        schedule.nextLabel,
+                                    )}
+                                </strong>
+                                <small>
+                                    {appTranslations.dashboard.dailyScan(
+                                        schedule.localTime,
+                                    )}
+                                </small>
+                            </div>
+                            <span className='scan-count'>
+                                <b>{activeAlertsCount}</b>
+                                {appTranslations.dashboard.routeNoun(
+                                    activeAlertsCount,
+                                )}
+                            </span>
+                        </section>
+                    </aside>
+                    <section
+                        className='dashboard-feed'
+                        data-dashboard-feed
+                        aria-label={appTranslations.dashboard.navigation.dashboard}
+                    >
+                        <AlertsSection
+                            key={alerts
+                                .map((alert) => `${alert.id}:${alert.active}`)
+                                .join('|')}
+                            alerts={alerts}
+                        />
+                        <EnablePushBanner />
+                    </section>
                 </div>
-                <section className='scan-card'>
-                    <div className='radar'>
-                        <span />
-                    </div>
-                    <div className='scan-copy'>
-                        <span className='status'>
-                            <i /> {appTranslations.dashboard.scanActive}
-                        </span>
-                        <strong>
-                            {appTranslations.dashboard.nextScan(
-                                schedule.nextLabel,
-                            )}
-                        </strong>
-                        <small>
-                            {appTranslations.dashboard.dailyScan(
-                                schedule.localTime,
-                            )}
-                        </small>
-                    </div>
-                    <span className='scan-count'>
-                        <b>{activeAlertsCount}</b>{' '}
-                        {appTranslations.dashboard.routeNoun(activeAlertsCount)}
-                    </span>
-                </section>
-                <AlertsSection
-                    key={alerts
-                        .map((alert) => `${alert.id}:${alert.active}`)
-                        .join('|')}
-                    alerts={alerts}
-                />
-                <EnablePushBanner />
-            </section>
-            <nav className='bottom-nav'>
+            </div>
+            <nav
+                className='bottom-nav'
+                aria-label={appTranslations.dashboard.ariaLabel}
+            >
                 <Link className='selected' href='/'>
                     <Home />
                     {appTranslations.dashboard.navigation.dashboard}
                 </Link>
-                <Link href='/alerts/new'>
-                    <Plus />
+                <Link className='nav-create' href='/alerts/new'>
+                    <span aria-hidden='true'>
+                        <Plus />
+                    </span>
                     {appTranslations.dashboard.navigation.newAlert}
                 </Link>
                 <Link href='/settings'>

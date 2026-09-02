@@ -18,6 +18,12 @@ export const appTranslations = {
             'Twoje alerty nadal działają w chmurze. Wróć, gdy odzyskasz połączenie.',
         retry: 'Spróbuj ponownie',
     },
+    notFound: {
+        title: 'Nie ma tu tej strony',
+        description:
+            'Adres mógł się zmienić albo alert został usunięty. Wróć do panelu i wybierz istniejącą trasę.',
+        action: 'Wróć do panelu',
+    },
     dashboard: {
         ariaLabel: 'Panel alertów lotniczych',
         greeting: (name: string) => `Dzień dobry, ${name}`,

@@ -1,4 +1,4 @@
-import { ArrowLeft, BellRing, KeyRound, Smartphone } from 'lucide-react';
+import { ArrowLeft, KeyRound, Smartphone } from 'lucide-react';
 import Link from 'next/link';
 import { EnablePushBanner } from '@/src/modules/notifications/components/enable-push-banner';
 import { PasswordForm } from '@/src/modules/auth/components/password-form';
@@ -9,13 +9,16 @@ export default async function SettingsPage() {
     const user = await getWhitelistedUser();
 
     return (
-        <main className='form-page'>
+        <main className='form-page' id='main-content'>
             <header className='form-header'>
-                <Link className='icon-button' href='/'>
+                <Link
+                    className='icon-button'
+                    href='/'
+                    aria-label={appTranslations.common.back}
+                >
                     <ArrowLeft size={19} />
                 </Link>
                 <div>
-                    <p className='eyebrow'>{appTranslations.settings.eyebrow}</p>
                     <h1>{appTranslations.settings.title}</h1>
                 </div>
             </header>
@@ -39,14 +42,7 @@ export default async function SettingsPage() {
                     <p>{appTranslations.settings.appDescription}</p>
                 </div>
             </section>
-            <section className='settings-card'>
-                <BellRing size={22} />
-                <div>
-                    <h2>{appTranslations.settings.notificationsTitle}</h2>
-                    <p>{appTranslations.settings.notificationsDescription}</p>
-                </div>
-            </section>
-            <EnablePushBanner />
+            <EnablePushBanner persistent />
         </main>
     );
 }

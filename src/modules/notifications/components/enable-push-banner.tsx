@@ -14,7 +14,7 @@ function vapidKey(value: string) {
     return output;
 }
 
-export function EnablePushBanner() {
+export function EnablePushBanner({ persistent = false }: { persistent?: boolean }) {
     const [status, setStatus] = useState<
         'checking' | 'idle' | 'loading' | 'enabled' | 'error'
     >('checking');
@@ -101,28 +101,42 @@ export function EnablePushBanner() {
         }
     }
 
-    if (status === 'checking' || status === 'enabled') return null;
+    if (status === 'checking' || (status === 'enabled' && !persistent))
+        return null;
 
     return (
-        <aside className='push-banner' aria-live='polite'>
+        <aside
+            className={`push-banner ${status === 'enabled' ? 'is-enabled' : ''}`}
+            aria-live='polite'
+        >
             <span className='bell'>
                 <BellRing size={18} />
             </span>
             <div>
-                <strong>{notificationTranslations.banner.title}</strong>
-                <p>{message}</p>
+                <strong>
+                    {status === 'enabled'
+                        ? notificationTranslations.banner.enabledTitle
+                        : notificationTranslations.banner.title}
+                </strong>
+                <p>
+                    {status === 'enabled'
+                        ? notificationTranslations.banner.enabledMessage
+                        : message}
+                </p>
             </div>
-            <button
-                type='button'
-                disabled={status === 'loading'}
-                onClick={enable}
-            >
-                {status === 'loading' ? (
-                    <LoaderCircle className='spin' size={15} />
-                ) : (
-                    notificationTranslations.banner.enable
-                )}
-            </button>
+            {status !== 'enabled' && (
+                <button
+                    type='button'
+                    disabled={status === 'loading'}
+                    onClick={enable}
+                >
+                    {status === 'loading' ? (
+                        <LoaderCircle className='spin' size={15} />
+                    ) : (
+                        notificationTranslations.banner.enable
+                    )}
+                </button>
+            )}
         </aside>
     );
 }

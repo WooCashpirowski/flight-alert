@@ -7,6 +7,9 @@ export const notificationTranslations = {
         deviceSaveFailed: 'Nie udało się zapisać urządzenia.',
         enableFailed: 'Nie udało się włączyć powiadomień.',
         title: 'Nie przegap spadku ceny',
+        enabledTitle: 'Powiadomienia są aktywne',
+        enabledMessage:
+            'To urządzenie otrzyma jeden zbiorczy komunikat dziennie.',
         enable: 'Włącz',
     },
     api: {
@@ -14,9 +17,9 @@ export const notificationTranslations = {
     },
     push: {
         missingVapid: 'Brak konfiguracji VAPID.',
-        singleDealTitle: 'Nowa okazja lotnicza ✈',
+        singleDealTitle: 'Nowa okazja lotnicza',
         multipleDealsTitle: (count: number) =>
-            `${count} nowych okazji lotniczych ✈`,
+            `${count} nowych okazji lotniczych`,
         cheapest: (
             origin: string,
             destination: string,

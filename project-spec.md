@@ -31,8 +31,8 @@ Najważniejsze założenia:
 | Warstwa | Aktualna technologia |
 | --- | --- |
 | Framework | Next.js 16.2, App Router, TypeScript |
-| UI | React 19, własny CSS z Tailwind CSS 4, Lucide React |
-| Font | lokalnie bundlowany Roboto przez `@fontsource/roboto` |
+| UI | React 19, warstwowy własny CSS z Tailwind CSS 4, Lucide React, selektywny GSAP |
+| Font | lokalnie bundlowany Outfit Variable przez `@fontsource-variable/outfit` |
 | Lokalizacja | statyczne, typowane słowniki PL podzielone według modułów |
 | Formularze | React Hook Form + Zod 4 |
 | Baza i uwierzytelnianie | Supabase PostgreSQL, Supabase Auth, RLS |
@@ -186,7 +186,7 @@ Tabela `notification_dispatches` i unikalność `(user_id, dispatch_date)` zapob
 
 - Użytkownik aktywuje powiadomienia w PWA po udzieleniu zgody systemowej.
 - Istniejąca subskrypcja przeglądarki jest automatycznie synchronizowana z Supabase.
-- Po skutecznej aktywacji banner zachęcający do włączenia powiadomień znika zarówno z panelu, jak i Ustawień.
+- Po skutecznej aktywacji banner zachęcający do włączenia powiadomień znika z panelu, a w Ustawieniach pozostaje spokojny stan potwierdzający aktywację.
 - Powiadomienie używa pełnej ikony `/icons/icon-192.png` oraz monochromatycznego badge `/icons/notification-96.png`.
 - Kliknięcie otwiera `/alerts/[id]` i skupia istniejące okno PWA, jeśli to możliwe.
 - Maksymalny TTL powiadomienia wynosi 12 godzin.
@@ -199,8 +199,14 @@ Tabela `notification_dispatches` i unikalność `(user_id, dispatch_date)` zapob
 - Service worker buforuje ekran offline oraz zasoby ikon.
 - Service worker buforuje również własny mały słownik komunikatów powiadomień.
 - Dla nieudanej nawigacji sieciowej pokazywana jest strona `/offline`.
-- Układ jest mobile-first, z dolną nawigacją zoptymalizowaną dla telefonu.
-- UI używa Roboto, własnego ciemnego systemu wizualnego i ikon Lucide.
+- Układ jest mobile-first, z dolną nawigacją zoptymalizowaną dla telefonu i wyróżnioną centralną akcją dodawania alertu.
+- Panel na desktopie wykorzystuje editorialny podział 5/7: przypięte podsumowanie po lewej i przewijaną listę alertów po prawej. Na telefonie pierwszy alert rozpoczyna się w obrębie pierwszego ekranu.
+- Alerty mają stale widoczne filtry `Wszystkie`, `Aktywne` i `Wstrzymane`, jednoznaczną hierarchię trasa → termin → cena oraz czytelne stany aktywny i wstrzymany.
+- UI używa Outfit Variable, jednego miętowego akcentu, ciemnych powierzchni o ograniczonej liczbie obramowań i ikon Lucide.
+- Formularze są budowane jako ciągła powierzchnia z separatorami, natywnie dostępnymi polami, własnym przełącznikiem i przyklejoną główną akcją na telefonie.
+- Wszystkie istotne elementy interaktywne mają widoczny `focus-visible`; zakładki logowania i dialog usuwania obsługują klawiaturę, a interfejs nie blokuje powiększania strony.
+- GSAP jest używany wyłącznie na desktopowym panelu do przypięcia podsumowania i subtelnego wejścia kart. `prefers-reduced-motion` wyłącza animacje, a telefon zachowuje statyczną, lekką ścieżkę renderowania.
+- Style są rozdzielone na fundamenty, panel, formularze i uwierzytelnianie w `src/styles/`.
 - Linki Next.js korzystają z prefetchingu, formularz prefetchuje trasę docelową, a dynamiczne przejścia mają ekran ładowania. Po przekierowaniu nie jest wykonywane zbędne podwójne odświeżenie.
 
 ## 9. Model danych
@@ -249,6 +255,7 @@ app/
 ├── auth/callback/
 ├── offline/
 ├── layout.tsx
+├── not-found.tsx
 └── manifest.ts
 
 src/modules/
@@ -265,6 +272,7 @@ src/shared/lib/
 └── utils.ts
 
 src/translations/pl/      # typowane słowniki aplikacji, alertów, auth i powiadomień
+src/styles/               # fundamenty wizualne oraz style panelu, formularzy i auth
 
 public/                   # service worker, ikony i grafika Open Graph
 supabase/migrations/      # migracje 0001 i 0002
@@ -330,7 +338,8 @@ Ostatnia weryfikacja bieżącego repozytorium:
 
 - lint: zaliczony;
 - produkcyjny build Next.js: zaliczony;
-- Playwright mobile: 5/5 testów zaliczonych;
+- Playwright mobile: 6/6 testów zaliczonych;
+- Playwright mobile + desktop: 12/12 testów zaliczonych, w tym obsługa klawiatury, dialogu usuwania, zoomu i ograniczenia ruchu;
 - live smoke: 11 zaliczonych, 0 błędów, 1 punkt zablokowany przez ograniczenie Web Push w headless Chromium;
 - fizyczne dostarczenie i otwarcie Web Push: potwierdzone manualnie;
 - migracja `0002_offer_details.sql`: potwierdzona w Supabase;

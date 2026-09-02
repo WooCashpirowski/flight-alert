@@ -109,8 +109,8 @@ export function AlertForm({ alert }: { alert?: EditableAlert }) {
         setMessageKind(result.ok ? 'success' : 'error');
         if (result.ok && result.id !== 'demo') {
             const destination = alert ? `/alerts/${alert.id}` : '/';
-      router.replace(destination);
-    }
+            router.replace(destination);
+        }
     }
 
     function invalid(invalidErrors: FieldErrors<CreateAlertFormInput>) {
@@ -119,7 +119,7 @@ export function AlertForm({ alert }: { alert?: EditableAlert }) {
     }
 
     return (
-        <main className='form-page'>
+        <main className='form-page' id='main-content'>
             <header className='form-header'>
                 <Link
                     href={alert ? `/alerts/${alert.id}` : '/'}
@@ -129,11 +129,6 @@ export function AlertForm({ alert }: { alert?: EditableAlert }) {
                     <ArrowLeft size={19} />
                 </Link>
                 <div>
-                    <p className='eyebrow'>
-                        {alert
-                            ? alertTranslations.form.editEyebrow
-                            : alertTranslations.form.createEyebrow}
-                    </p>
                     <h1>
                         {alert
                             ? alertTranslations.form.editTitle

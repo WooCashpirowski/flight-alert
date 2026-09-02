@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { Filter, Gauge, LoaderCircle } from 'lucide-react';
+import { ArrowUpRight, Gauge, LoaderCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toggleAlert } from '@/src/modules/alerts/actions';
@@ -16,11 +16,23 @@ const filterLabels: Record<AlertFilter, string> = {
     paused: alertTranslations.list.filters.paused,
 };
 
+const dateFormatter = new Intl.DateTimeFormat('pl-PL', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+});
+
+function formatDateRange(departureDate: string, returnDate?: string | null) {
+    const departure = dateFormatter.format(new Date(`${departureDate}T12:00:00`));
+    if (!returnDate) return departure;
+    const arrival = dateFormatter.format(new Date(`${returnDate}T12:00:00`));
+    return `${departure} – ${arrival}`;
+}
+
 export function AlertsSection({ alerts }: { alerts: DashboardAlert[] }) {
     const router = useRouter();
     const [items, setItems] = useState(alerts);
     const [filter, setFilter] = useState<AlertFilter>('all');
-    const [filtersOpen, setFiltersOpen] = useState(false);
     const [message, setMessage] = useState<string>();
     const [pendingId, setPendingId] = useState<string>();
     const [isPending, startTransition] = useTransition();
@@ -52,40 +64,25 @@ export function AlertsSection({ alerts }: { alerts: DashboardAlert[] }) {
     }
 
     return (
-        <section className='section'>
+        <section className='section alerts-section'>
             <div className='section-heading'>
-                <div>
-                    <p className='eyebrow'>{alertTranslations.list.eyebrow}</p>
-                    <h2>{alertTranslations.list.title}</h2>
-                </div>
-                <div className='filters'>
-                    <button
-                        className='filter-button'
-                        type='button'
-                        aria-expanded={filtersOpen}
-                        aria-controls='alert-filters'
-                        onClick={() => setFiltersOpen((value) => !value)}
-                    >
-                        <Filter size={13} /> {filterLabels[filter]}
-                    </button>
-                    {filtersOpen && (
-                        <div className='filter-popover' id='alert-filters'>
-                            {(Object.keys(filterLabels) as AlertFilter[]).map(
-                                (value) => (
-                                    <button
-                                        key={value}
-                                        type='button'
-                                        aria-pressed={filter === value}
-                                        onClick={() => {
-                                            setFilter(value);
-                                            setFiltersOpen(false);
-                                        }}
-                                    >
-                                        {filterLabels[value]}
-                                    </button>
-                                ),
-                            )}
-                        </div>
+                <h2>{alertTranslations.list.title}</h2>
+                <div
+                    className='filter-group'
+                    role='group'
+                    aria-label={alertTranslations.list.eyebrow}
+                >
+                    {(Object.keys(filterLabels) as AlertFilter[]).map(
+                        (value) => (
+                            <button
+                                key={value}
+                                type='button'
+                                aria-pressed={filter === value}
+                                onClick={() => setFilter(value)}
+                            >
+                                {filterLabels[value]}
+                            </button>
+                        ),
                     )}
                 </div>
             </div>
@@ -96,15 +93,24 @@ export function AlertsSection({ alerts }: { alerts: DashboardAlert[] }) {
             )}
             {visible.length ? (
                 <div className='alert-grid'>
-                    {visible.map((alert, index) => (
+                    {visible.map((alert) => (
                         <article
-                            className={`alert-card ${index % 2 ? 'violet' : 'mint'}`}
+                            className={`alert-card ${alert.active ? '' : 'is-paused'}`}
                             key={alert.id}
+                            data-alert-card
                         >
                             <div className='alert-topline'>
-                                <span className='route-pill'>
-                                    {alert.origin} → {alert.destination}
-                                </span>
+                                <p className='route-date'>
+                                    {formatDateRange(
+                                        alert.departureDate,
+                                        alert.returnDate,
+                                    )}
+                                    {alert.flexDays
+                                        ? alertTranslations.list.flexSuffix(
+                                              alert.flexDays,
+                                          )
+                                        : ''}
+                                </p>
                                 <button
                                     className='active-pill status-button'
                                     type='button'
@@ -137,25 +143,16 @@ export function AlertsSection({ alerts }: { alerts: DashboardAlert[] }) {
                                         : alertTranslations.list.paused}
                                 </button>
                             </div>
-                            <div className='route-line'>
-                                <span />
-                                <i>✦</i>
-                                <span />
-                            </div>
-                            <h3>
-                                {alert.origin} · {alert.destination}
+                            <h3 className='route-heading'>
+                                <span>{alert.origin}</span>
+                                <i aria-hidden='true'>→</i>
+                                <span>{alert.destination}</span>
                             </h3>
-                            <p>
-                                {alert.departureDate}
-                                {alert.returnDate
-                                    ? ` – ${alert.returnDate}`
-                                    : alertTranslations.list.oneWaySuffix}
-                                {alert.flexDays
-                                    ? alertTranslations.list.flexSuffix(
-                                          alert.flexDays,
-                                      )
-                                    : ''}
-                            </p>
+                            {!alert.returnDate && (
+                                <p className='trip-note'>
+                                    {alertTranslations.list.oneWaySuffix}
+                                </p>
+                            )}
                             <div className='price-row'>
                                 <div>
                                     <small>{alertTranslations.list.limit}</small>
@@ -174,13 +171,14 @@ export function AlertsSection({ alerts }: { alerts: DashboardAlert[] }) {
                                     </strong>
                                 </div>
                                 <Link
+                                    className='details-link'
                                     href={`/alerts/${alert.id}`}
                                     aria-label={alertTranslations.list.detailsAria(
                                         alert.origin,
                                         alert.destination,
                                     )}
                                 >
-                                    →
+                                    <ArrowUpRight size={18} />
                                 </Link>
                             </div>
                         </article>

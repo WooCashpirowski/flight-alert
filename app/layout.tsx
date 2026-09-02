@@ -2,10 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { ServiceWorkerRegistration } from '@/src/modules/pwa/components/service-worker-registration';
 import { i18nConfig } from '@/src/shared/i18n/config';
 import { appTranslations } from '@/src/translations/pl/app';
-import '@fontsource/roboto/400.css';
-import '@fontsource/roboto/500.css';
-import '@fontsource/roboto/700.css';
-import '@fontsource/roboto/900.css';
+import '@fontsource-variable/outfit';
 import './globals.css';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
@@ -61,7 +58,6 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
     width: 'device-width',
     initialScale: 1,
-    maximumScale: 1,
     viewportFit: 'cover',
     themeColor: '#07100d',
     colorScheme: 'dark',
@@ -72,6 +68,9 @@ export default function RootLayout({
     return (
         <html lang={i18nConfig.htmlLang} data-scroll-behavior='smooth'>
             <body>
+                <a className='skip-link' href='#main-content'>
+                    Przejdź do treści
+                </a>
                 {children}
                 <ServiceWorkerRegistration />
             </body>

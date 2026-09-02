@@ -13,6 +13,16 @@ import { getDashboardData } from '@/src/modules/alerts/queries';
 import { formatPrice } from '@/src/shared/lib/utils';
 import { alertTranslations } from '@/src/translations/pl/alerts';
 
+const dateFormatter = new Intl.DateTimeFormat('pl-PL', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+});
+
+function formatDate(value: string) {
+    return dateFormatter.format(new Date(`${value}T12:00:00`));
+}
+
 export default async function AlertDetailPage({
     params,
 }: {
@@ -28,7 +38,7 @@ export default async function AlertDetailPage({
             : null;
 
     return (
-        <main className='form-page'>
+        <main className='form-page' id='main-content'>
             <header className='form-header'>
                 <Link
                     className='icon-button'
@@ -38,9 +48,6 @@ export default async function AlertDetailPage({
                     <ArrowLeft size={19} />
                 </Link>
                 <div>
-                    <p className='eyebrow'>
-                        {alertTranslations.details.eyebrow}
-                    </p>
                     <h1>
                         {alert.origin} → {alert.destination}
                     </h1>
@@ -53,50 +60,9 @@ export default async function AlertDetailPage({
                     <Pencil size={17} />
                 </Link>
             </header>
-            <section className='detail-hero'>
-                <PlaneTakeoff size={26} />
-                <p>
-                    {alertTranslations.details.description}
-                </p>
-            </section>
-            <div className='detail-grid'>
-                <section className='settings-card'>
-                    <CalendarDays />
-                    <div>
-                        <h2>
-                            {alert.departureDate}
-                            {alert.returnDate && ` – ${alert.returnDate}`}
-                        </h2>
-                        <p>
-                            {alert.flexDays
-                                ? alertTranslations.details.flexibility(
-                                      alert.flexDays,
-                                  )
-                                : alertTranslations.details.exactDates}
-                        </p>
-                    </div>
-                </section>
-                <section className='settings-card'>
-                    <Gauge />
-                    <div>
-                        <h2>
-                            {alertTranslations.details.limit(
-                                formatPrice(alert.maxPrice),
-                            )}
-                        </h2>
-                        <p>
-                            {alertTranslations.details.bestPrice(
-                                alert.bestPrice
-                                    ? formatPrice(alert.bestPrice)
-                                    : alertTranslations.details.searching,
-                            )}
-                        </p>
-                    </div>
-                </section>
-            </div>
             {offerUrl && (
                 <a
-                    className='offer-action'
+                    className='offer-action offer-featured'
                     href={offerUrl}
                     target='_blank'
                     rel='noreferrer'
@@ -115,6 +81,41 @@ export default async function AlertDetailPage({
                     <ExternalLink size={18} />
                 </a>
             )}
+            <p className='detail-intro'>
+                <PlaneTakeoff size={21} aria-hidden='true' />
+                <span>{alertTranslations.details.description}</span>
+            </p>
+            <dl className='detail-facts'>
+                <div>
+                    <CalendarDays aria-hidden='true' />
+                    <dt>{alertTranslations.details.datesLabel}</dt>
+                    <dd>
+                        {formatDate(alert.departureDate)}
+                        {alert.returnDate && ` – ${formatDate(alert.returnDate)}`}
+                    </dd>
+                    <small>
+                        {alert.flexDays
+                            ? alertTranslations.details.flexibility(
+                                  alert.flexDays,
+                              )
+                            : alertTranslations.details.exactDates}
+                    </small>
+                </div>
+                <div>
+                    <Gauge aria-hidden='true' />
+                    <dt>{alertTranslations.details.priceLabel}</dt>
+                    <dd>
+                        {alert.bestPrice
+                            ? formatPrice(alert.bestPrice)
+                            : alertTranslations.details.searching}
+                    </dd>
+                    <small>
+                        {alertTranslations.details.limit(
+                            formatPrice(alert.maxPrice),
+                        )}
+                    </small>
+                </div>
+            </dl>
             <AlertActions id={alert.id} active={alert.active} />
         </main>
     );

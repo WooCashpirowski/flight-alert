@@ -7,9 +7,12 @@ settings:
 importers:
     .:
         dependencies:
-            '@fontsource/roboto':
+            '@fontsource-variable/outfit':
                 specifier: ^5.3.0
                 version: 5.3.0
+            '@gsap/react':
+                specifier: ^2.1.2
+                version: 2.1.2(gsap@3.15.0)(react@19.2.6)
             '@hookform/resolvers':
                 specifier: ^5.9.1
                 version: 5.9.1(ajv-formats@2.1.1(ajv@8.20.0))(ajv@8.20.0)(react-hook-form@7.86.0(react@19.2.6))(zod@4.4.3)
@@ -22,6 +25,9 @@ importers:
             clsx:
                 specifier: ^2.1.1
                 version: 2.1.1
+            gsap:
+                specifier: ^3.15.0
+                version: 3.15.0
             lucide-react:
                 specifier: ^1.33.0
                 version: 1.33.0(react@19.2.6)
@@ -640,11 +646,20 @@ packages:
             }
         engines: { node: ^18.18.0 || ^20.9.0 || >=21.1.0 }
 
-    '@fontsource/roboto@5.3.0':
+    '@fontsource-variable/outfit@5.3.0':
         resolution:
             {
-                integrity: sha512-BapRJOWYP+LZ21zp+wBQjfpPYKRoxc4LspJ/RLuI+HSMBD5u/X4O+ESDrSvEqDSy0rAl7GwBJ+09mdc16cVQ1Q==,
+                integrity: sha512-fPb5XnYK0k7SbR++HEmm4+ZqDszmLKQ+sPRUr8oQ/KNC0vy6r6hazJFe8iYozv4cqlHbvJ/JECkJWrfDodUMVQ==,
             }
+
+    '@gsap/react@2.1.2':
+        resolution:
+            {
+                integrity: sha512-JqliybO1837UcgH2hVOM4VO+38APk3ECNrsuSM4MuXp+rbf+/2IG2K1YJiqfTcXQHH7XlA0m3ykniFYstfq0Iw==,
+            }
+        peerDependencies:
+            gsap: ^3.12.5
+            react: '>=17'
 
     '@hookform/resolvers@5.9.1':
         resolution:
@@ -3390,6 +3405,12 @@ packages:
                 integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==,
             }
 
+    gsap@3.15.0:
+        resolution:
+            {
+                integrity: sha512-dMW4CWBTUK1AEEDeZc1g4xpPGIrSf9fJF960qbTZmN/QwZIWY5wgliS6JWl9/25fpTGJrMRtSjGtOmPnfjZB+A==,
+            }
+
     has-bigints@1.1.0:
         resolution:
             {
@@ -5688,7 +5709,12 @@ snapshots:
             '@eslint/core': 0.17.0
             levn: 0.4.1
 
-    '@fontsource/roboto@5.3.0': {}
+    '@fontsource-variable/outfit@5.3.0': {}
+
+    '@gsap/react@2.1.2(gsap@3.15.0)(react@19.2.6)':
+        dependencies:
+            gsap: 3.15.0
+            react: 19.2.6
 
     '@hookform/resolvers@5.9.1(ajv-formats@2.1.1(ajv@8.20.0))(ajv@8.20.0)(react-hook-form@7.86.0(react@19.2.6))(zod@4.4.3)':
         dependencies:
@@ -7314,6 +7340,8 @@ snapshots:
     gopd@1.2.0: {}
 
     graceful-fs@4.2.11: {}
+
+    gsap@3.15.0: {}
 
     has-bigints@1.1.0: {}
 

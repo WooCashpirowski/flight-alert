@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
     Controller,
     useForm,
@@ -80,6 +80,23 @@ export function AlertForm({ alert }: { alert?: EditableAlert }) {
         },
     });
     const roundTrip = useWatch({ control, name: 'isRoundTrip' });
+    const departureDate = useWatch({ control, name: 'departureDate' });
+    const departureDateMounted = useRef(false);
+
+    useEffect(() => {
+        if (!departureDateMounted.current) {
+            departureDateMounted.current = true;
+            return;
+        }
+        if (!roundTrip || !departureDate) return;
+        const dep = new Date(departureDate);
+        if (Number.isNaN(dep.getTime())) return;
+        dep.setDate(dep.getDate() + 3);
+        setValue('returnDate', dep.toISOString().slice(0, 10), {
+            shouldDirty: true,
+            shouldValidate: true,
+        });
+    }, [departureDate, roundTrip, setValue]);
 
     useEffect(() => {
         router.prefetch('/');

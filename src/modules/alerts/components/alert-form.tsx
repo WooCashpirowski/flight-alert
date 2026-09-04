@@ -17,6 +17,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
     Controller,
     useForm,
+    useController,
     useWatch,
     type FieldErrors,
 } from 'react-hook-form';
@@ -27,6 +28,8 @@ import {
     type CreateAlertInput,
 } from '@/src/modules/alerts/schemas';
 import { AirportCombobox } from '@/src/modules/alerts/components/airport-combobox';
+import { TravelDatePicker } from '@/src/modules/alerts/components/travel-date-picker';
+import { addCalendarDays, todayInWarsaw, type TravelDates } from '@/src/modules/alerts/dates';
 import { alertTranslations } from '@/src/translations/pl/alerts';
 import { appTranslations } from '@/src/translations/pl/app';
 import { i18nConfig } from '@/src/shared/i18n/config';
@@ -34,9 +37,7 @@ import { i18nConfig } from '@/src/shared/i18n/config';
 export type EditableAlert = CreateAlertInput & { id: string };
 
 function dateAfter(days: number) {
-    const date = new Date();
-    date.setDate(date.getDate() + days);
-    return date.toISOString().slice(0, 10);
+    return addCalendarDays(todayInWarsaw(), days);
 }
 
 function firstErrorMessage(errors: FieldErrors<CreateAlertFormInput>) {
@@ -66,6 +67,7 @@ export function AlertForm({ alert }: { alert?: EditableAlert }) {
         formState: { errors, isSubmitting },
         getValues,
         setValue,
+        trigger,
     } = useForm<CreateAlertFormInput, unknown, CreateAlertInput>({
         resolver: zodResolver(CreateAlertSchema),
         defaultValues: alert ?? {
@@ -81,22 +83,25 @@ export function AlertForm({ alert }: { alert?: EditableAlert }) {
     });
     const roundTrip = useWatch({ control, name: 'isRoundTrip' });
     const departureDate = useWatch({ control, name: 'departureDate' });
-    const departureDateMounted = useRef(false);
+    const returnDate = useWatch({ control, name: 'returnDate' });
+    const { field: returnField } = useController({ control, name: 'returnDate' });
+    const rememberedReturn = useRef('');
 
-    useEffect(() => {
-        if (!departureDateMounted.current) {
-            departureDateMounted.current = true;
-            return;
-        }
-        if (!roundTrip || !departureDate) return;
-        const dep = new Date(departureDate);
-        if (Number.isNaN(dep.getTime())) return;
-        dep.setDate(dep.getDate() + 3);
-        setValue('returnDate', dep.toISOString().slice(0, 10), {
-            shouldDirty: true,
-            shouldValidate: true,
-        });
-    }, [departureDate, roundTrip, setValue]);
+    function confirmDates(dates: TravelDates) {
+        setValue('departureDate', dates.departureDate, { shouldDirty: true, shouldTouch: true });
+        setValue('returnDate', roundTrip ? dates.returnDate : '', { shouldDirty: true, shouldTouch: true });
+        void trigger(['departureDate', 'returnDate']);
+    }
+
+    function changeTripType(next: boolean) {
+        if (next === roundTrip) return;
+        const current = getValues();
+        if (!next) rememberedReturn.current = current.returnDate ?? '';
+        const restored = rememberedReturn.current;
+        setValue('isRoundTrip', next, { shouldDirty: true });
+        setValue('returnDate', next && restored >= current.departureDate && restored >= todayInWarsaw() ? restored : '', { shouldDirty: true });
+        void trigger(['departureDate', 'returnDate']);
+    }
 
     useEffect(() => {
         router.prefetch('/');
@@ -228,7 +233,7 @@ export function AlertForm({ alert }: { alert?: EditableAlert }) {
                                         type='radio'
                                         name={field.name}
                                         checked={field.value === true}
-                                        onChange={() => field.onChange(true)}
+                                        onChange={() => changeTripType(true)}
                                     />
                                     <span>
                                         {alertTranslations.form.roundTrip}{' '}
@@ -245,7 +250,7 @@ export function AlertForm({ alert }: { alert?: EditableAlert }) {
                                         type='radio'
                                         name={field.name}
                                         checked={field.value === false}
-                                        onChange={() => field.onChange(false)}
+                                        onChange={() => changeTripType(false)}
                                     />
                                     <span>
                                         {alertTranslations.form.oneWay}{' '}
@@ -274,42 +279,14 @@ export function AlertForm({ alert }: { alert?: EditableAlert }) {
                             <p>{alertTranslations.form.datesDescription}</p>
                         </div>
                     </div>
-                    <div className='two-columns'>
-                        <label>
-                            {alertTranslations.form.departureDate}
-                            <div className='field-control'>
-                                <input
-                                    type='date'
-                                    {...register('departureDate')}
-                                    aria-invalid={Boolean(errors.departureDate)}
-                                />
-                            </div>
-                            {errors.departureDate && (
-                                <span className='field-error'>
-                                    {errors.departureDate.message}
-                                </span>
-                            )}
-                        </label>
-                        {roundTrip && (
-                            <label>
-                                {alertTranslations.form.returnDate}
-                                <div className='field-control'>
-                                    <input
-                                        type='date'
-                                        {...register('returnDate')}
-                                        aria-invalid={Boolean(
-                                            errors.returnDate,
-                                        )}
-                                    />
-                                </div>
-                                {errors.returnDate && (
-                                    <span className='field-error'>
-                                        {errors.returnDate.message}
-                                    </span>
-                                )}
-                            </label>
-                        )}
-                    </div>
+                    <Controller name='departureDate' control={control} render={({ field }) => (
+                        <TravelDatePicker roundTrip={Boolean(roundTrip)}
+                            value={{ departureDate, returnDate: returnDate ?? '' }}
+                            onConfirm={confirmDates} onBlur={() => { field.onBlur(); returnField.onBlur(); }}
+                            inputRef={(node) => { field.ref(node); returnField.ref(node); }}
+                            error={errors.departureDate?.message ?? errors.returnDate?.message}
+                            disabled={isSubmitting} />
+                    )} />
                     <label className='top-gap'>
                         {alertTranslations.form.dateFlexibility}
                         <select

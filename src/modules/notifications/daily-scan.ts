@@ -1,4 +1,4 @@
-import { CreateAlertSchema } from '@/src/modules/alerts/schemas';
+import { StoredAlertSchema } from '@/src/modules/alerts/schemas';
 import { searchFlights } from '@/src/modules/flight-search/flight-service';
 import {
     sendDailyDigest,
@@ -17,7 +17,7 @@ export async function runDailyScan() {
 
     for (const alert of alerts) {
         try {
-            const input = CreateAlertSchema.parse({
+            const input = StoredAlertSchema.parse({
                 origin: alert.origin,
                 destination: alert.destination,
                 isRoundTrip: alert.is_round_trip,

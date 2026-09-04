@@ -231,9 +231,276 @@
     line-height: 1.45;
 }
 
-.field-control input[type='date'] {
+.travel-date-control,
+.travel-date-control input {
+    cursor: pointer;
+}
+
+.travel-date-control > svg {
+    flex: 0 0 auto;
+    color: var(--accent);
+}
+
+.field-control.travel-date-control input {
     text-transform: none;
-    color-scheme: dark;
+    text-overflow: ellipsis;
+    font-size: 1rem;
+}
+
+.travel-date-control:has([aria-invalid='true']) {
+    border-color: var(--danger);
+}
+
+.travel-date-dialog {
+    width: min(100%, 44rem);
+    max-width: 100%;
+    max-height: calc(100dvh - 1rem);
+    margin: auto auto 0;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid var(--line-strong);
+    border-bottom: 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--shadow-soft);
+}
+
+.travel-date-dialog::backdrop {
+    background: rgba(0, 7, 4, 0.76);
+}
+
+.travel-date-panel {
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100dvh - 1rem);
+}
+
+.travel-date-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 1.25rem 1.25rem 0;
+    color: var(--accent);
+}
+
+.travel-date-heading > svg {
+    flex: 0 0 auto;
+}
+
+.travel-date-heading h2 {
+    margin: 0;
+    font-size: 1.15rem;
+    line-height: 1.3;
+    letter-spacing: -0.025em;
+}
+
+.travel-date-selection {
+    padding: 0.85rem 1.25rem 1rem;
+}
+
+.travel-date-selection strong {
+    font-size: 1.05rem;
+    font-weight: 550;
+    color: var(--accent);
+}
+
+.travel-date-selection p {
+    margin: 0.25rem 0 0;
+    color: var(--muted);
+    font-size: 0.78rem;
+}
+
+.travel-date-months {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0 0.65rem 0.85rem;
+}
+
+.travel-calendar {
+    position: relative;
+    width: 100%;
+}
+
+.travel-calendar .rdp-months {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.travel-calendar .rdp-month {
+    min-width: 0;
+}
+
+.travel-calendar .rdp-month_caption {
+    display: flex;
+    align-items: center;
+    height: 3.25rem;
+    padding: 0 5.5rem 0 0.55rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.travel-calendar .rdp-nav {
+    position: absolute;
+    top: 0.25rem;
+    right: 0;
+    display: flex;
+    gap: 0.2rem;
+}
+
+.travel-calendar .rdp-button_previous,
+.travel-calendar .rdp-button_next {
+    width: 2.75rem;
+    height: 2.75rem;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--surface-raised);
+    color: var(--accent);
+}
+
+.travel-calendar .rdp-month_grid {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 0 0.25rem;
+}
+
+.travel-calendar .rdp-weekday {
+    height: 1.75rem;
+    color: var(--muted);
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.travel-calendar .rdp-day {
+    padding: 0;
+    text-align: center;
+}
+
+.travel-calendar .rdp-day_button {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    min-height: 2.6rem;
+    aspect-ratio: 1;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 0.7rem;
+    background: transparent;
+    color: var(--text);
+    font-size: 0.9rem;
+}
+
+.travel-calendar .rdp-today:not(.rdp-selected) .rdp-day_button {
+    border-color: var(--line-strong);
+    color: var(--accent);
+}
+
+.travel-calendar .rdp-selected:not(.rdp-range_middle) .rdp-day_button {
+    background: var(--accent);
+    color: var(--accent-ink);
+    font-weight: 700;
+}
+
+.travel-calendar .rdp-range_middle {
+    background: var(--accent-soft);
+}
+
+.travel-calendar .rdp-range_start:not(.rdp-range_end) {
+    background: linear-gradient(to right, transparent 50%, var(--accent-soft) 50%);
+}
+
+.travel-calendar .rdp-range_end:not(.rdp-range_start) {
+    background: linear-gradient(to left, transparent 50%, var(--accent-soft) 50%);
+}
+
+.travel-calendar .rdp-disabled .rdp-day_button,
+.travel-calendar .rdp-nav button:disabled,
+.travel-calendar .rdp-nav button[aria-disabled='true'] {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.travel-calendar .rdp-hidden {
+    visibility: hidden;
+}
+
+.travel-calendar button:focus-visible {
+    position: relative;
+    z-index: 1;
+    outline-offset: -0.2rem;
+}
+
+@media (hover: hover) {
+    .travel-calendar .rdp-day:not(.rdp-selected) .rdp-day_button:not(:disabled):hover,
+    .travel-calendar .rdp-nav button:not(:disabled):hover {
+        background: var(--accent-soft);
+    }
+}
+
+.travel-date-actions {
+    display: grid;
+    flex: 0 0 auto;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem max(1rem, env(safe-area-inset-bottom));
+    border-top: 1px solid var(--line);
+    background: var(--surface);
+}
+
+.travel-date-actions button,
+.travel-calendar-loading button {
+    min-height: 3rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+}
+
+.travel-date-actions .primary-action:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    background: var(--accent);
+}
+
+.travel-calendar-loading {
+    min-height: 20rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    color: var(--muted);
+}
+
+@media (min-width: 40rem) {
+    .travel-date-dialog {
+        max-width: calc(100% - 2rem);
+        margin: auto;
+        border: 1px solid var(--line-strong);
+        border-radius: var(--radius-lg);
+    }
+
+    .travel-date-months {
+        padding-inline: 1.25rem;
+    }
+
+    .travel-calendar .rdp-months {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+
+    .travel-calendar .rdp-month:first-child .rdp-month_caption {
+        padding-right: 0;
+    }
+
+    .travel-date-actions {
+        grid-template-columns: 8rem 8rem;
+        justify-content: end;
+    }
 }
 
 .field-error {

@@ -19,7 +19,7 @@ function alertPayload(input: CreateAlertInput, userId: string) {
         destination: input.destination,
         is_round_trip: input.isRoundTrip,
         departure_date: input.departureDate,
-        return_date: input.returnDate || null,
+        return_date: input.isRoundTrip ? input.returnDate || null : null,
         flex_days: input.flexDays,
         max_price: input.maxPrice,
         active: input.active,

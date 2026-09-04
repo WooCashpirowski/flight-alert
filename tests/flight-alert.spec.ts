@@ -67,7 +67,7 @@ test('alert form validates a round trip and can submit in demo mode', async ({
     await page.getByLabel('Elastyczność dat').selectOption('3');
     await expect(page.getByLabel('Elastyczność dat')).toHaveValue('3');
 
-    const origin = page.getByRole('combobox', { name: 'Wylot' });
+    const origin = page.getByRole('combobox', { name: 'Wylot', exact: true });
     const destination = page.getByRole('combobox', { name: 'Przylot' });
     await expect(origin).toHaveValue('Warszawa (WAW)');
     await expect(destination).toHaveValue('Barcelona (BCN)');
@@ -91,7 +91,7 @@ test('airport search supports cities, countries, keyboard and manual codes', asy
     page,
 }) => {
     await page.goto('/alerts/new');
-    const origin = page.getByRole('combobox', { name: 'Wylot' });
+    const origin = page.getByRole('combobox', { name: 'Wylot', exact: true });
     const destination = page.getByRole('combobox', { name: 'Przylot' });
 
     await destination.fill('mal');

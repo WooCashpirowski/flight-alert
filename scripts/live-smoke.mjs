@@ -1,5 +1,6 @@
 import { chromium, devices, expect } from '@playwright/test';
 import { createClient } from '@supabase/supabase-js';
+import { chooseCalendarDay } from './calendar-test-helpers.mjs';
 
 const baseUrl = (process.env.LIVE_BASE_URL ?? 'http://localhost:3000').replace(
     /\/$/,
@@ -206,11 +207,11 @@ try {
         await expect(roundTrip).toBeChecked();
         await roundTrip.click();
         await page.getByLabel('Elastyczność dat').selectOption('3');
-        const origin = page.locator('input[name="origin"]');
-        const destination = page.locator('input[name="destination"]');
+        const origin = page.getByRole('combobox', { name: 'Wylot', exact: true });
+        const destination = page.getByRole('combobox', { name: 'Przylot', exact: true });
         await page.getByRole('button', { name: 'Zamień lotniska' }).click();
-        await expect(origin).toHaveValue('BCN');
-        await expect(destination).toHaveValue('WAW');
+        await expect(origin).toHaveValue('Barcelona (BCN)');
+        await expect(destination).toHaveValue('Warszawa (WAW)');
         await page.getByRole('button', { name: 'Zamień lotniska' }).click();
         const price = page.getByRole('spinbutton', { name: /Maksymalna cena/ });
         await price.fill('0');
@@ -221,10 +222,12 @@ try {
                 .filter({ hasText: 'Cena musi być większa od 0' }),
         ).toBeVisible();
 
-        await page.locator('input[name="origin"]').fill('WAW');
-        await page.locator('input[name="destination"]').fill('BCN');
-        await page.getByLabel('Data wylotu').fill(dateAfter(35));
-        await page.getByLabel('Data powrotu').fill(dateAfter(39));
+        await expect(origin).toHaveValue('Warszawa (WAW)');
+        await expect(destination).toHaveValue('Barcelona (BCN)');
+        await page.getByLabel('Daty wylotu i powrotu').click();
+        await chooseCalendarDay(page, dateAfter(35));
+        await chooseCalendarDay(page, dateAfter(39));
+        await page.getByRole('button', { name: 'OK', exact: true }).click();
         await price.fill('9999');
         await page.getByRole('button', { name: 'Zapisz alert' }).click();
         try {

@@ -7,6 +7,9 @@ settings:
 importers:
     .:
         dependencies:
+            '@daypicker/react':
+                specifier: 10.0.1
+                version: 10.0.1(@types/react@19.2.14)(react@19.2.6)
             '@fontsource-variable/outfit':
                 specifier: ^5.3.0
                 version: 5.3.0
@@ -115,6 +118,35 @@ importers:
                 version: 4.92.0(@cloudflare/workers-types@4.20260515.1)
 
 packages:
+    '@date-fns/tz@1.5.0':
+        resolution:
+            integrity: sha512-lwYN/vDPeNRULcepoE/LO2Pgx+7/RV+S9ARfbc9lr2DtGkOD7pAiruHvbR1RX3Qyf6ja47EWJDMsNK5vK08DJg==
+    '@daypicker/react@10.0.1':
+        resolution:
+            integrity: sha512-lH4YQz4iMBWP8hsI1bD9Eg0T7t503IkSUR/WDGGkV5mKZvwVv+ukCkJz7yN+uVFBv7vHTK+ww7a5EvlkeFwPYQ==
+        engines:
+            node: '>=18'
+        peerDependencies:
+            '@types/react': '>=16.8.0'
+            react: '>=16.8.0'
+        peerDependenciesMeta:
+            '@types/react':
+                optional: true
+    date-fns@4.4.0:
+        resolution:
+            integrity: sha512-+1UMbeh68lH1SegH83CGWwpb6OHHbpSgr3+s5Eww5M4CAgswBpoWS0AjTOfEJ33HiYKz1hdj/KTFprzXHmq/6w==
+    react-day-picker@10.0.1:
+        resolution:
+            integrity: sha512-eNh6BlwcYInWaJtRv18mXQ06Ys/H6rdTZAnTaSdOYJuTpwP1JMCHNd1FDRadA+gbeinq+psdULN5Xnowy9mV8w==
+        engines:
+            node: '>=18'
+        peerDependencies:
+            '@types/react': '>=16.8.0'
+            react: '>=16.8.0'
+        peerDependenciesMeta:
+            '@types/react':
+                optional: true
+
     '@alloc/quick-lru@5.2.0':
         resolution:
             {
@@ -5420,6 +5452,22 @@ packages:
             }
 
 snapshots:
+    '@date-fns/tz@1.5.0': {}
+    '@daypicker/react@10.0.1(@types/react@19.2.14)(react@19.2.6)':
+        dependencies:
+            react: 19.2.6
+            react-day-picker: 10.0.1(@types/react@19.2.14)(react@19.2.6)
+        optionalDependencies:
+            '@types/react': 19.2.14
+    date-fns@4.4.0: {}
+    react-day-picker@10.0.1(@types/react@19.2.14)(react@19.2.6):
+        dependencies:
+            '@date-fns/tz': 1.5.0
+            date-fns: 4.4.0
+            react: 19.2.6
+        optionalDependencies:
+            '@types/react': 19.2.14
+
     '@alloc/quick-lru@5.2.0': {}
 
     '@babel/code-frame@7.29.7':

@@ -32,6 +32,7 @@ Key principles:
 | Font                    | Locally bundled Outfit Variable via `@fontsource-variable/outfit`                  |
 | Localization            | Static, typed Polish dictionaries organized by module                            |
 | Forms                   | React Hook Form + Zod 4                                                          |
+| Calendar                | React DayPicker 10 (`@daypicker/react`), loaded on demand with Polish locale       |
 | Database and auth       | Supabase PostgreSQL, Supabase Auth, RLS                                           |
 | Flight search           | Google Flights via SerpApi; the public Ryanair endpoint as a fallback             |
 | Notifications           | Web Push API, `web-push`, VAPID, custom service worker                             |
@@ -87,13 +88,22 @@ The `/alerts/new` form includes:
 - a searchable destination airport, defaulting to `Barcelona (BCN)`; `ANY` is also supported;
 - a button to swap the departure and arrival airports;
 - trip type: **Round trip** by default (the Polish UI label is **W obie strony**), with one-way travel as an option;
-- a departure date, defaulting to 21 days from the current date;
-- a return date, defaulting to 25 days from the current date;
+- one custom date field, with departure defaulting to 21 days and return to 25 days from today in `Europe/Warsaw`;
 - flexibility: exact dates, ±1, ±2, or ±3 days;
 - a maximum price in PLN, defaulting to PLN 600;
 - a toggle to enable or disable the alert.
 
-React Hook Form and Zod validate the form on the client. The same Zod schema is checked again in the Server Action. For round trips, a return date is required and cannot precede the departure date. The price must be greater than zero.
+React Hook Form and Zod validate the form on the client. The same Zod schema is checked again in the Server Action. Departure and applicable return dates must be today or later in `Europe/Warsaw`; today is computed at validation time. For round trips, a return date is required and cannot precede the departure date; a same-day return is allowed. The price must be greater than zero. Editing an expired alert requires choosing current dates before saving the form. The daily scan uses a separate structural schema for stored alerts, preserving the existing scan and flexible-date behavior.
+
+The same date picker is used for creation and editing:
+
+- One read-only field is labeled `Data wylotu` for one-way travel or `Daty wylotu i powrotu` for round trips. Dates display as `DD.MM.YYYY`, with an en dash between range endpoints; storage remains `YYYY-MM-DD`.
+- Below 40rem, a native HTML modal dialog styled with the application's dark surfaces, Outfit font, and mint accent opens as a bottom sheet with one month. Larger screens show a centered dialog with two months. Weeks start on Monday; calendar labels and accessible day names are Polish.
+- Opening copies committed dates into a draft. The first click starts a range, the second completes it; an earlier second date restarts the beginning. A completed range is highlighted, and another click starts a new range. A same-day range still takes two clicks.
+- `OK` is enabled only when the draft is complete, valid, and different from the opening values. Dates are committed to the form together only on `OK`; choosing a day never closes the calendar. `Anuluj`, Escape, and backdrop clicks discard the draft. Focus remains in the dialog while open and returns to the field on closing.
+- Past days cannot be selected, navigation starts at the current month, and expired saved dates open the current month. The date boundary refreshes at minute boundaries (including midnight), on focus, visibility changes, and page resume; confirmation and saving also recheck it.
+- Switching to one-way travel keeps the departure and remembers the return only within the current form session. Switching back restores the return if it is still valid; otherwise a return must be selected. One-way writes always persist a null return date. No automatic return-date offset overwrites a selected range.
+- DayPicker and its Polish locale load only when the dialog opens, with loading and retry feedback. The dialog's cancel action remains available while loading. Calendar date arithmetic avoids UTC conversion of selected local dates.
 
 Airport fields use a custom accessible combobox. Search supports IATA codes, cities, airport names, countries, and aliases, ignoring case and Polish diacritics. The selected value is displayed as `Miasto (IATA)` (City (IATA)), while the form and database continue to store only the three-letter code. A code that is not in the catalog can be explicitly confirmed as a manual value.
 
@@ -345,10 +355,12 @@ Most recent verification of the current repository:
 
 - lint: passed;
 - production Next.js build: passed;
-- Playwright mobile: 7/7 tests passed;
-- Playwright mobile + desktop: 14/14 tests passed, including airport search by city and country, manual IATA codes, keyboard and delete dialog support, zoom, and reduced motion;
+- Playwright mobile: 18/18 tests passed;
+- Playwright mobile + desktop: 36/36 tests passed, including the existing airport, authentication, alert-management and PWA checks, plus calendar selection, unchanged/partial selection, cancellation, same-day ranges, trip switching, past dates, expired-alert editing, keyboard focus, Warsaw midnight with an America/Los_Angeles browser, and server-action rejection of past dates after bypassing client validation;
+- calendar screenshots and overflow checks passed at 320, 412, and 1440 px; the action footer also remained visible on a 380 px tall viewport;
+- production calendar chunk: 79,257 bytes (23,302 bytes gzip), absent from the initial form HTML; the Playwright network check confirms the calendar loads on opening;
 - alert card headings: airport captions, width constrained to the IATA code, and a centered green airplane verified at viewport widths of 320, 412, and 1440 px; no horizontal overflow;
-- live smoke: 11 passed, 0 errors, 1 check blocked by the Web Push limitation in headless Chromium;
+- previous live smoke: 11 passed, 0 errors, 1 check blocked by the Web Push limitation in headless Chromium; the script now uses the custom date picker and current airport controls, but live Supabase/provider/push checks were not rerun for the calendar change;
 - actual Web Push delivery and opening: verified manually;
 - migration `0002_offer_details.sql`: confirmed in Supabase;
 - data created by the live test: deleted.

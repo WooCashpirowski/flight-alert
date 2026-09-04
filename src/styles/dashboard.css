@@ -431,8 +431,9 @@
 }
 
 .route-heading {
-    display: flex;
-    align-items: baseline;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: start;
     gap: 0.65rem;
     margin: 1.7rem 0 0.4rem;
     font-size: clamp(2.5rem, 13vw, 4.4rem);
@@ -440,11 +441,33 @@
     letter-spacing: -0.07em;
 }
 
-.route-heading i {
-    color: var(--accent);
-    font-size: 0.55em;
-    font-style: normal;
+.route-airport {
+    display: grid;
+    grid-template-columns: min-content;
+    gap: 0.55rem;
+    justify-self: center;
+}
+
+.route-airport-code {
+    white-space: nowrap;
+}
+
+.route-airport-label {
+    min-width: 0;
+    color: var(--muted);
+    font-size: 0.75rem;
     font-weight: 400;
+    line-height: 1.4;
+    letter-spacing: 0;
+    overflow-wrap: anywhere;
+}
+
+.route-plane {
+    width: 0.55em;
+    height: 0.55em;
+    margin-top: 0.175em;
+    color: var(--accent);
+    transform: rotate(45deg);
 }
 
 .trip-note {

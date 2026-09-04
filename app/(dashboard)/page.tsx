@@ -4,10 +4,12 @@ import Link from 'next/link';
 import { getDashboardData } from '@/src/modules/alerts/queries';
 import { AlertsSection } from '@/src/modules/alerts/components/alerts-section';
 import { DashboardMotion } from '@/src/modules/alerts/components/dashboard-motion';
+import { getAirportByCode } from '@/src/modules/alerts/lib/airport-search';
 import { ProfileMenu } from '@/src/modules/auth/components/profile-menu';
 import { EnablePushBanner } from '@/src/modules/notifications/components/enable-push-banner';
 import { i18nConfig } from '@/src/shared/i18n/config';
 import { appTranslations } from '@/src/translations/pl/app';
+import { alertTranslations } from '@/src/translations/pl/alerts';
 
 function scanSchedule(now = new Date()) {
     const next = new Date(now);
@@ -29,6 +31,21 @@ function scanSchedule(now = new Date()) {
 
 export default async function DashboardPage() {
     const { alerts, name, email, demo } = await getDashboardData();
+    const airportCodes = new Set(
+        alerts.flatMap((alert) => [alert.origin, alert.destination]),
+    );
+    const airportLabels = Object.fromEntries(
+        [...airportCodes].map((code) => {
+            const airport = getAirportByCode(code);
+            const label =
+                code === 'ANY'
+                    ? alertTranslations.form.anywhere
+                    : airport
+                      ? `${airport.city}, ${airport.name.replace(/^Lotnisko\s+/i, '')}`
+                      : alertTranslations.form.externalAirportCode;
+            return [code, label];
+        }),
+    );
     const now = new Date();
     const date = new Intl.DateTimeFormat(i18nConfig.locale, {
         weekday: 'long',
@@ -128,6 +145,7 @@ export default async function DashboardPage() {
                                 .map((alert) => `${alert.id}:${alert.active}`)
                                 .join('|')}
                             alerts={alerts}
+                            airportLabels={airportLabels}
                         />
                         <EnablePushBanner />
                     </section>

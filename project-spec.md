@@ -1,54 +1,51 @@
-# Flight Alert — specyfikacja aktualnego systemu
+# Flight Alert — current system specification
 
-> Żywa dokumentacja projektu. Stan lokalnego repozytorium na 2 września 2026 r.  
-> Zmiany opisane w tym dokumencie trafią na produkcję po wysłaniu bieżącej wersji repozytorium do GitHuba i zakończeniu wdrożenia na Vercelu.
+## 1. Purpose and scope
 
-## 1. Cel i zakres
+Flight Alert is a private, installable PWA for monitoring flight prices. The user defines a route, travel dates, date flexibility, and a maximum price. Once a day, the application checks active alerts, saves the best offer found, and sends a consolidated Web Push notification if the price is within the limit.
 
-Flight Alert to prywatna, instalowalna aplikacja PWA do monitorowania cen lotów. Użytkownik definiuje trasę, termin, elastyczność dat i maksymalną cenę. Raz dziennie aplikacja sprawdza aktywne alerty, zapisuje najlepszą znalezioną ofertę i wysyła zbiorcze powiadomienie Web Push, jeżeli cena mieści się w limicie.
+Key principles:
 
-Najważniejsze założenia:
+- a mobile-first interface;
+- access restricted to email addresses in the `allowed_users` table;
+- login and registration using an email address and password;
+- at most one consolidated notification per user per day;
+- clicking a notification opens the relevant alert;
+- user data protected by Supabase Row Level Security;
+- a simple feature-driven architecture using App Router, RSC, and Server Actions.
 
-- interfejs projektowany mobile-first;
-- dostęp wyłącznie dla adresów z tabeli `allowed_users`;
-- logowanie i rejestracja za pomocą adresu e-mail oraz hasła;
-- maksymalnie jedno zbiorcze powiadomienie dziennie na użytkownika;
-- kliknięcie powiadomienia otwiera właściwy alert;
-- dane użytkowników chronione przez Supabase Row Level Security;
-- prosta architektura feature-driven wykorzystująca App Router, RSC i Server Actions.
+## 2. Deployment status
 
-## 2. Stan wdrożenia
+- The repository is connected to GitHub and a Vercel project.
+- Current production URL: `https://flight-alert-alpha.vercel.app`.
+- Supabase is configured, and migrations `0001_initial.sql` and `0002_offer_details.sql` have been applied.
+- The application has been installed and tested as a PWA on a physical phone.
+- Actual Web Push delivery, the icon, the monochrome badge, and the deep link to an alert have been verified manually.
+- The current changes in the local repository still need to be committed and pushed to reach production.
 
-- Repozytorium jest połączone z GitHubem i projektem Vercel.
-- Aktualny adres produkcyjny: `https://flight-alert-alpha.vercel.app`.
-- Supabase jest skonfigurowany, a migracje `0001_initial.sql` i `0002_offer_details.sql` zostały wykonane.
-- Aplikacja została zainstalowana i sprawdzona jako PWA na fizycznym telefonie.
-- Rzeczywiste powiadomienie Web Push, ikona, monochromatyczny badge i deep link do alertu zostały potwierdzone manualnie.
-- Bieżące poprawki w lokalnym repozytorium wymagają jeszcze commita i pushu, aby trafiły na produkcję.
+## 3. Technology stack
 
-## 3. Stos technologiczny
+| Layer                   | Current technology                                                               |
+| ----------------------- | -------------------------------------------------------------------------------- |
+| Framework               | Next.js 16.2, App Router, TypeScript                                              |
+| UI                      | React 19, layered custom CSS with Tailwind CSS 4, Lucide React, selective GSAP use  |
+| Font                    | Locally bundled Outfit Variable via `@fontsource-variable/outfit`                  |
+| Localization            | Static, typed Polish dictionaries organized by module                            |
+| Forms                   | React Hook Form + Zod 4                                                          |
+| Database and auth       | Supabase PostgreSQL, Supabase Auth, RLS                                           |
+| Flight search           | Google Flights via SerpApi; the public Ryanair endpoint as a fallback             |
+| Notifications           | Web Push API, `web-push`, VAPID, custom service worker                             |
+| Scheduling              | Vercel Cron, `0 7 * * *`                                                          |
+| Tests                   | Playwright: mobile, desktop, and a live integration smoke test                     |
+| Hosting                 | Vercel                                                                           |
 
-| Warstwa | Aktualna technologia |
-| --- | --- |
-| Framework | Next.js 16.2, App Router, TypeScript |
-| UI | React 19, warstwowy własny CSS z Tailwind CSS 4, Lucide React, selektywny GSAP |
-| Font | lokalnie bundlowany Outfit Variable przez `@fontsource-variable/outfit` |
-| Lokalizacja | statyczne, typowane słowniki PL podzielone według modułów |
-| Formularze | React Hook Form + Zod 4 |
-| Baza i uwierzytelnianie | Supabase PostgreSQL, Supabase Auth, RLS |
-| Wyszukiwanie lotów | Google Flights przez SerpApi; awaryjnie publiczny endpoint Ryanair |
-| Powiadomienia | Web Push API, `web-push`, VAPID, własny service worker |
-| Harmonogram | Vercel Cron, `0 7 * * *` |
-| Testy | Playwright: mobile, desktop i rzeczywisty smoke test integracyjny |
-| Hosting | Vercel |
+The project does not currently use shadcn/ui. The Amadeus adapter remains in the codebase but is not connected to the active search flow because the self-service portal has been discontinued.
 
-Projekt nie używa obecnie shadcn/ui. Adapter Amadeus pozostaje w kodzie, ale nie jest podłączony do aktywnej ścieżki wyszukiwania, ponieważ portal self-service został wycofany.
+## 4. Authentication and access
 
-## 4. Uwierzytelnianie i dostęp
+### 4.1 Allowed users
 
-### 4.1 Lista dozwolonych użytkowników
-
-Adres musi najpierw znaleźć się w tabeli `public.allowed_users`:
+An email address must first be added to the `public.allowed_users` table:
 
 ```sql
 insert into public.allowed_users (email)
@@ -58,192 +55,193 @@ values
 on conflict (email) do nothing;
 ```
 
-Można dodać dowolną liczbę adresów. Porównanie adresów jest wykonywane bez rozróżniania wielkości liter.
+Any number of email addresses can be added. Email address comparisons are case-insensitive.
 
-### 4.2 Rejestracja i logowanie
+### 4.2 Registration and login
 
-- Rejestracja wymaga adresu z `allowed_users` i hasła mającego od 8 do 72 znaków.
-- Jeżeli w Supabase włączone jest potwierdzanie adresu, użytkownik otrzymuje wiadomość aktywacyjną, a następnie loguje się ustawionym hasłem.
-- Logowanie używa `signInWithPassword`.
-- Middleware odświeża sesję, chroni prywatne trasy i dodatkowo sprawdza allowlistę.
-- Użytkownik może zmienić lub ustawić hasło w Ustawieniach. Obsługuje to także konta utworzone wcześniej przez magic link.
-- Menu profilu pokazuje adres użytkownika i umożliwia wylogowanie.
+- Registration requires an email address from `allowed_users` and a password between 8 and 72 characters long.
+- If email confirmation is enabled in Supabase, the user receives an activation email and then logs in with the password they set.
+- Login uses `signInWithPassword`.
+- Middleware refreshes the session, protects private routes, and also checks the allowlist.
+- The user can change or set a password in Settings. This also supports accounts previously created through a magic link.
+- The profile menu shows the user's email address and provides a logout option.
 
-Magic link nie jest podstawowym sposobem logowania.
+Magic links are not the primary login method.
 
-### 4.3 Publiczne trasy
+### 4.3 Public routes
 
 - `/login`
 - `/auth/callback`
 - `/offline`
-- `/api/cron/check-flights` — endpoint pozostaje publicznie osiągalny, ale wymaga poprawnego sekretu w nagłówku `Authorization`.
+- `/api/cron/check-flights` — the endpoint remains publicly reachable but requires a valid secret in the `Authorization` header.
 
-Pozostałe trasy wymagają aktywnej, dozwolonej sesji, jeśli Supabase jest skonfigurowany. Bez konfiguracji Supabase aplikacja uruchamia bezpieczny tryb demonstracyjny UI.
+All other routes require an active, allowlisted session when Supabase is configured. Without Supabase configuration, the application runs in a safe UI demo mode.
 
-## 5. Alerty cenowe
+## 5. Price alerts
 
-### 5.1 Formularz
+### 5.1 Form
 
-Formularz `/alerts/new` zawiera:
+The `/alerts/new` form includes:
 
-- wyszukiwalne lotnisko wylotu, domyślnie `Warszawa (WAW)`;
-- wyszukiwalne lotnisko docelowe, domyślnie `Barcelona (BCN)`; obsługiwane jest również `ANY`;
-- przycisk zamiany lotniska wylotu i przylotu;
-- typ podróży: domyślnie **W obie strony**, opcjonalnie jedna strona;
-- datę wylotu, domyślnie 21 dni od bieżącej daty;
-- datę powrotu, domyślnie 25 dni od bieżącej daty;
-- elastyczność: dokładne daty, ±1, ±2 lub ±3 dni;
-- maksymalną cenę w PLN, domyślnie 600 PLN;
-- przełącznik aktywności alertu.
+- a searchable departure airport, defaulting to `Warszawa (WAW)` (Warsaw);
+- a searchable destination airport, defaulting to `Barcelona (BCN)`; `ANY` is also supported;
+- a button to swap the departure and arrival airports;
+- trip type: **Round trip** by default (the Polish UI label is **W obie strony**), with one-way travel as an option;
+- a departure date, defaulting to 21 days from the current date;
+- a return date, defaulting to 25 days from the current date;
+- flexibility: exact dates, ±1, ±2, or ±3 days;
+- a maximum price in PLN, defaulting to PLN 600;
+- a toggle to enable or disable the alert.
 
-React Hook Form i Zod walidują formularz po stronie klienta. Ta sama definicja Zod jest ponownie sprawdzana w Server Action. Dla podróży w obie strony data powrotu jest obowiązkowa i nie może poprzedzać daty wylotu. Cena musi być większa od zera.
+React Hook Form and Zod validate the form on the client. The same Zod schema is checked again in the Server Action. For round trips, a return date is required and cannot precede the departure date. The price must be greater than zero.
 
-Pola lotnisk korzystają z własnego dostępnego comboboxa. Wyszukiwanie działa po kodzie IATA, mieście, nazwie lotniska, państwie oraz aliasach, bez rozróżniania wielkości liter i polskich znaków. Wybrana wartość jest prezentowana jako `Miasto (IATA)`, natomiast formularz i baza nadal przechowują wyłącznie 3-literowy kod. Kod spoza katalogu można zatwierdzić jawnie jako ręczną wartość.
+Airport fields use a custom accessible combobox. Search supports IATA codes, cities, airport names, countries, and aliases, ignoring case and Polish diacritics. The selected value is displayed as `Miasto (IATA)` (City (IATA)), while the form and database continue to store only the three-letter code. A code that is not in the catalog can be explicitly confirmed as a manual value.
 
-Globalny katalog jest przechowywany jako wygenerowany snapshot w repozytorium i ładowany wyłącznie na stronie formularza. Obejmuje lotniska z kodem IATA i regularnymi połączeniami z publicznego zbioru OurAirports. Nazwy państw są lokalizowane na polski, a dotychczasowe polskie nazwy popularnych lotnisk są zachowane jako etykiety i aliasy. Produkcyjna wyszukiwarka lotnisk nie wykonuje zapytań do zewnętrznego API. Snapshot można odświeżyć poleceniem `pnpm airports`.
+The global catalog is stored as a generated snapshot in the repository. The full catalog is sent to the browser only on the form page; the dashboard reads it on the server and passes only the labels for airports used in alerts. It includes airports with IATA codes and scheduled service from the public OurAirports dataset. Country names are localized into Polish, and the existing Polish names of popular airports are preserved as labels and aliases. The production airport search does not query an external API. The snapshot can be refreshed with `pnpm airports`.
 
-Po poprawnym zapisie użytkownik wraca do panelu, gdzie nowy alert jest natychmiast widoczny.
+After a successful save, the user returns to the dashboard, where the new alert is immediately visible.
 
-### 5.2 Zarządzanie
+### 5.2 Management
 
-Użytkownik może:
+The user can:
 
-- wyświetlić wszystkie, aktywne albo wstrzymane alerty;
-- szybko wstrzymać lub wznowić alert z panelu;
-- otworzyć szczegóły alertu;
-- edytować wszystkie parametry na `/alerts/[id]/edit`;
-- usunąć alert po potwierdzeniu.
+- view all, active, or paused alerts;
+- quickly pause or resume an alert from the dashboard;
+- open alert details;
+- edit all parameters at `/alerts/[id]/edit`;
+- delete an alert after confirmation.
 
-Każda operacja jest ograniczona do właściciela rekordu zarówno w Server Action, jak i przez RLS.
+Every operation is restricted to the record owner, both in the Server Action and through RLS.
 
-### 5.3 Szczegóły oferty
+### 5.3 Offer details
 
-Po skanie alert przechowuje:
+After a scan, the alert stores:
 
 - `best_price`;
 - `best_provider`;
 - `best_offer_url`;
 - `last_checked_at`.
 
-Widok `/alerts/[id]` pokazuje najlepszą cenę i przycisk prowadzący do strony oferty, obecnie najczęściej do Google Flights. Link jest renderowany tylko wtedy, gdy jest poprawnym adresem HTTP lub HTTPS.
+The `/alerts/[id]` view shows the best price and a button linking to the offer page, currently most often Google Flights. The link is rendered only if it is a valid HTTP or HTTPS URL.
 
-## 6. Wyszukiwanie lotów
+## 6. Flight search
 
-Wspólny format oferty:
+Shared offer format:
 
 ```ts
 export interface FlightOffer {
-  provider: string;
-  origin: string;
-  destination: string;
-  price: number;
-  currency: string;
-  departureDate: string;
-  returnDate?: string;
-  bookingUrl: string;
+    provider: string;
+    origin: string;
+    destination: string;
+    price: number;
+    currency: string;
+    departureDate: string;
+    returnDate?: string;
+    bookingUrl: string;
 }
 ```
 
-### 6.1 Aktywna kolejność dostawców
+### 6.1 Active provider selection order
 
-1. Jeśli istnieje `SERPAPI_API_KEY`, używany jest wyłącznie `SerpApiProvider`, który pobiera wyniki Google Flights.
-2. Jeżeli klucza SerpApi nie ma, używany jest `RyanairProvider` jako awaryjne źródło.
+1. If `SERPAPI_API_KEY` is present, only `SerpApiProvider` is used to retrieve Google Flights results.
+2. If the SerpApi key is missing, `RyanairProvider` is used as a fallback source.
 
-Błąd dostawcy jest logowany i zwraca pustą listę zamiast przerywać cały dzienny skan.
+A provider error is logged and results in an empty list instead of interrupting the entire daily scan.
 
-### 6.2 Zakres linii lotniczych
+### 6.2 Airline coverage
 
-SerpApi nie zwraca ofert jednej konkretnej linii. Udostępnia wyniki Google Flights, więc zestaw przewoźników zależy od trasy i danych widocznych w Google Flights. Wizz Air może pojawić się w wynikach Google Flights, ale aplikacja nie ma osobnego adaptera ani bezpośredniego API Wizz Air.
+SerpApi does not return offers from just one specific airline. It provides Google Flights results, so the set of carriers depends on the route and the data available in Google Flights. Wizz Air may appear in Google Flights results, but the application has no separate Wizz Air adapter or direct Wizz Air API integration.
 
-### 6.3 Elastyczne daty
+### 6.3 Flexible dates
 
-Dla alertu z elastycznością aplikacja wybiera jeden offset w dozwolonym zakresie na dany dzień i rotuje go między kolejnymi skanami. Nie wykonuje wszystkich kombinacji dat w jednym przebiegu, co ogranicza zużycie zapytań SerpApi.
+For an alert with date flexibility, the application selects one offset within the allowed range for a given day and rotates it across successive scans. It does not check every date combination in a single run, which limits SerpApi request usage.
 
-## 7. Skan dzienny i powiadomienia
+## 7. Daily scan and notifications
 
-### 7.1 Harmonogram
+### 7.1 Schedule
 
-Vercel wywołuje `/api/cron/check-flights` codziennie o `07:00 UTC`.
+Vercel calls `/api/cron/check-flights` daily at `07:00 UTC`.
 
-- w polskim czasie zimowym jest to około 08:00;
-- w polskim czasie letnim jest to około 09:00.
+- In Poland's standard time, this is approximately 08:00.
+- In Poland's daylight saving time, this is approximately 09:00.
 
-Panel oblicza i pokazuje następną godzinę skanu dynamicznie w strefie `Europe/Warsaw`.
+The dashboard dynamically calculates and displays the next scan time in the `Europe/Warsaw` time zone.
 
-Endpoint wymaga nagłówka:
+The endpoint requires this header:
 
 ```text
 Authorization: Bearer <CRON_SECRET>
 ```
 
-### 7.2 Przebieg skanu
+### 7.2 Scan flow
 
-1. Pobierane są wszystkie aktywne alerty.
-2. Każdy alert jest walidowany i wyszukiwany niezależnie.
-3. Najlepsza cena, provider, link oraz czas sprawdzenia są zapisywane w bazie.
-4. Oferty mieszczące się w limicie są grupowane według użytkownika.
-5. Użytkownik z aktywną subskrypcją otrzymuje jedno zbiorcze powiadomienie.
+1. All active alerts are retrieved.
+2. Each alert is validated and searched independently.
+3. The best price, provider, link, and check timestamp are saved to the database.
+4. Offers within the price limit are grouped by user.
+5. A user with an active subscription receives one consolidated notification.
 
-Tabela `notification_dispatches` i unikalność `(user_id, dispatch_date)` zapobiegają wysłaniu więcej niż jednego zbiorczego push dziennie. Jeśli wszystkie próby dostarczenia zakończą się błędem, rezerwacja dzienna jest usuwana, dzięki czemu możliwa jest późniejsza ponowna próba.
+The `notification_dispatches` table and the uniqueness constraint on `(user_id, dispatch_date)` prevent more than one consolidated push notification from being sent per day. If all delivery attempts fail, the daily reservation is removed so that a later retry is possible.
 
 ### 7.3 Web Push
 
-- Użytkownik aktywuje powiadomienia w PWA po udzieleniu zgody systemowej.
-- Istniejąca subskrypcja przeglądarki jest automatycznie synchronizowana z Supabase.
-- Po skutecznej aktywacji banner zachęcający do włączenia powiadomień znika z panelu, a w Ustawieniach pozostaje spokojny stan potwierdzający aktywację.
-- Powiadomienie używa pełnej ikony `/icons/icon-192.png` oraz monochromatycznego badge `/icons/notification-96.png`.
-- Kliknięcie otwiera `/alerts/[id]` i skupia istniejące okno PWA, jeśli to możliwe.
-- Maksymalny TTL powiadomienia wynosi 12 godzin.
+- The user enables notifications in the PWA after granting system permission.
+- An existing browser subscription is automatically synchronized with Supabase.
+- After successful activation, the banner prompting the user to enable notifications disappears from the dashboard, while Settings retains an unobtrusive status confirming activation.
+- The notification uses the full icon at `/icons/icon-192.png` and the monochrome badge at `/icons/notification-96.png`.
+- Clicking opens `/alerts/[id]` and focuses an existing PWA window when possible.
+- The maximum notification TTL is 12 hours.
 
-## 8. PWA i interfejs
+## 8. PWA and interface
 
-- `display: standalone`, orientacja pionowa, ciemny motyw.
-- Ikony 192×192, 512×512, maskable 512×512 i Apple Touch Icon.
-- Własna ikona Flight Alert jest używana w nagłówku, instalacji PWA i powiadomieniach.
-- Service worker buforuje ekran offline oraz zasoby ikon.
-- Service worker buforuje również własny mały słownik komunikatów powiadomień.
-- Dla nieudanej nawigacji sieciowej pokazywana jest strona `/offline`.
-- Układ jest mobile-first, z dolną nawigacją zoptymalizowaną dla telefonu i wyróżnioną centralną akcją dodawania alertu.
-- Panel na desktopie wykorzystuje editorialny podział 5/7: przypięte podsumowanie po lewej i przewijaną listę alertów po prawej. Na telefonie pierwszy alert rozpoczyna się w obrębie pierwszego ekranu.
-- Alerty mają stale widoczne filtry `Wszystkie`, `Aktywne` i `Wstrzymane`, jednoznaczną hierarchię trasa → termin → cena oraz czytelne stany aktywny i wstrzymany.
-- UI używa Outfit Variable, jednego miętowego akcentu, ciemnych powierzchni o ograniczonej liczbie obramowań i ikon Lucide.
-- Formularze są budowane jako ciągła powierzchnia z separatorami, natywnie dostępnymi polami, własnym przełącznikiem i przyklejoną główną akcją na telefonie.
-- Pola trasy są układane pionowo na telefonie i używają comboboxa obsługiwanego myszą, dotykiem oraz klawiaturą; na większych ekranach wracają do układu poziomego.
-- Wszystkie istotne elementy interaktywne mają widoczny `focus-visible`; zakładki logowania i dialog usuwania obsługują klawiaturę, a interfejs nie blokuje powiększania strony.
-- GSAP jest używany wyłącznie na desktopowym panelu do przypięcia podsumowania i subtelnego wejścia kart. `prefers-reduced-motion` wyłącza animacje, a telefon zachowuje statyczną, lekką ścieżkę renderowania.
-- Style są rozdzielone na fundamenty, panel, formularze i uwierzytelnianie w `src/styles/`.
-- Linki Next.js korzystają z prefetchingu, formularz prefetchuje trasę docelową, a dynamiczne przejścia mają ekran ładowania. Po przekierowaniu nie jest wykonywane zbędne podwójne odświeżenie.
+- `display: standalone`, portrait orientation, dark theme.
+- Icons: 192×192, 512×512, maskable 512×512, and Apple Touch Icon.
+- The custom Flight Alert icon is used in the header, PWA installation, and notifications.
+- The service worker caches the offline screen and icon assets.
+- The service worker also caches its own small dictionary of notification messages.
+- Failed network navigation displays the `/offline` page.
+- The layout is mobile-first, with bottom navigation optimized for phones and a prominent central action for adding an alert.
+- The desktop dashboard uses a 5/7 editorial split: a pinned summary on the left and a scrolling alert list on the right. On phones, the first alert begins within the initial viewport.
+- Alerts have always-visible filters labeled `Wszystkie` (All), `Aktywne` (Active), and `Wstrzymane` (Paused), a clear route → dates → price hierarchy, and distinct active and paused states.
+- Route headings on dashboard cards show a caption beneath each IATA code in the form `(Miasto, lotnisko)` (meaning “City, airport”), wrapping within the width of the code. A green airplane pointing horizontally to the right is centered in the heading at the level of the codes. `ANY` has the caption `(Dowolne miejsce)` (Anywhere), while manual codes without a catalog entry use `(Kod IATA spoza katalogu)` (IATA code not in the catalog).
+- The UI uses Outfit Variable, a single mint accent, dark surfaces with a limited number of borders, and Lucide icons.
+- Forms are built as a continuous surface with separators, natively accessible fields, a custom toggle, and a sticky primary action on phones.
+- Route fields are stacked vertically on phones and use a combobox that supports mouse, touch, and keyboard input; on larger screens, they return to a horizontal layout.
+- All key interactive elements have a visible `focus-visible` state; the login tabs and delete dialog support keyboard input, and the interface does not block page zoom.
+- GSAP is used only on the desktop dashboard to pin the summary and provide subtle card entrance animations. `prefers-reduced-motion` disables animations, while phones retain a static, lightweight rendering path.
+- Styles are separated into foundations, dashboard, forms, and authentication in `src/styles/`.
+- Next.js links use prefetching, the form prefetches its destination route, and dynamic transitions have a loading screen. No unnecessary double refresh is performed after a redirect.
 
-## 9. Model danych
+## 9. Data model
 
 ### `allowed_users`
 
-- `email` — klucz główny;
+- `email` — primary key;
 - `created_at`.
 
 ### `alerts`
 
-- identyfikator i `user_id` z kaskadowym usuwaniem po usunięciu konta;
-- trasa, typ podróży, daty i elastyczność;
-- limit ceny i stan aktywności;
-- najlepsza cena, provider, link do oferty i czas ostatniego skanu;
-- czas utworzenia.
+- an identifier and `user_id`, with cascading deletion when the account is deleted;
+- route, trip type, dates, and flexibility;
+- price limit and active state;
+- best price, provider, offer link, and last scan timestamp;
+- creation timestamp.
 
 ### `push_subscriptions`
 
-- właściciel subskrypcji;
-- endpoint Push API;
-- klucze `p256dh` i `auth`;
-- unikalna para `(user_id, endpoint)`.
+- subscription owner;
+- Push API endpoint;
+- `p256dh` and `auth` keys;
+- unique pair `(user_id, endpoint)`.
 
 ### `notification_dispatches`
 
-- użytkownik i data wysyłki;
-- unikalna para `(user_id, dispatch_date)`.
+- user and dispatch date;
+- unique pair `(user_id, dispatch_date)`.
 
-RLS jest włączone dla wszystkich czterech tabel. Użytkownicy mogą odczytywać własny wpis allowlisty i wykonywać operacje wyłącznie na swoich alertach oraz subskrypcjach. Skan cron korzysta z klucza service role po stronie serwera.
+RLS is enabled for all four tables. Users can read their own allowlist entry and perform operations only on their own alerts and subscriptions. The cron scan uses the service role key on the server.
 
-## 10. Struktura projektu
+## 10. Project structure
 
 ```text
 app/
@@ -264,37 +262,37 @@ app/
 └── manifest.ts
 
 src/modules/
-├── alerts/               # schematy, katalog lotnisk, wyszukiwanie, Server Actions i UI alertów
-├── auth/                 # logowanie, rejestracja, hasło, guard i profil
-├── flight-search/        # wspólny serwis i adaptery dostawców
-├── notifications/        # skan dzienny, Web Push i banner aktywacji
-└── pwa/                  # rejestracja service workera
+├── alerts/               # schemas, airport catalog, search, Server Actions, and alert UI
+├── auth/                 # login, registration, password, guard, and profile
+├── flight-search/        # shared service and provider adapters
+├── notifications/        # daily scan, Web Push, and activation banner
+└── pwa/                  # service worker registration
 
 src/shared/lib/
-├── supabase/             # klienci browser, server i admin
-├── i18n/                 # konfiguracja locale, strefy czasowej i waluty
+├── supabase/             # browser, server, and admin clients
+├── i18n/                 # locale, time zone, and currency configuration
 ├── env.ts
 └── utils.ts
 
-src/translations/pl/      # typowane słowniki aplikacji, alertów, auth i powiadomień
-src/styles/               # fundamenty wizualne oraz style panelu, formularzy i auth
+src/translations/pl/      # typed dictionaries for the app, alerts, auth, and notifications
+src/styles/               # visual foundations and dashboard, form, and auth styles
 
-public/                   # service worker, ikony i grafika Open Graph
-supabase/migrations/      # migracje 0001 i 0002
-tests/                    # testy Playwright
-scripts/                  # generatory katalogu lotnisk i ikon oraz rzeczywisty smoke test
+public/                   # service worker, icons, and Open Graph image
+supabase/migrations/      # migrations 0001 and 0002
+tests/                    # Playwright tests
+scripts/                  # airport catalog and icon generators, and the live smoke test
 ```
 
-## 11. Zmienne środowiskowe
+## 11. Environment variables
 
-### Publiczne
+### Public
 
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `NEXT_PUBLIC_SITE_URL`
 - `NEXT_PUBLIC_VAPID_PUBLIC_KEY`
 
-### Wyłącznie serwerowe
+### Server-only
 
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `VAPID_PRIVATE_KEY`
@@ -302,32 +300,32 @@ scripts/                  # generatory katalogu lotnisk i ikon oraz rzeczywisty 
 - `CRON_SECRET`
 - `SERPAPI_API_KEY`
 
-Klucza service role, prywatnego VAPID, sekretu cron ani klucza SerpApi nie wolno umieszczać w zmiennej `NEXT_PUBLIC_*`, logach, kodzie klienta ani repozytorium.
+The service role key, private VAPID key, cron secret, and SerpApi key must never be placed in a `NEXT_PUBLIC_*` variable, logs, client code, or the repository.
 
-### Testy rzeczywiste
+### Live tests
 
-Plik `.env.test.local`, który nie trafia do repozytorium, zawiera:
+The `.env.test.local` file, which is not committed to the repository, contains:
 
 - `TEST_USERNAME`
 - `TEST_PASSWORD`
 
-Konto testowe musi istnieć zarówno w Supabase Auth, jak i `allowed_users`.
+The test account must exist in both Supabase Auth and `allowed_users`.
 
-## 12. Konfiguracja produkcyjna
+## 12. Production configuration
 
-Na Vercelu należy ustawić wszystkie zmienne z sekcji 11 dla środowiska Production. `NEXT_PUBLIC_SITE_URL` powinien wskazywać kanoniczny adres wdrożenia bez końcowego ukośnika.
+All variables from section 11 must be configured for the Production environment in Vercel. `NEXT_PUBLIC_SITE_URL` should point to the canonical deployment URL without a trailing slash.
 
-W Supabase Authentication → URL Configuration:
+In Supabase Authentication → URL Configuration:
 
-- Site URL powinien wskazywać adres produkcyjny;
-- Redirect URLs powinny zawierać `https://flight-alert-alpha.vercel.app/auth/callback`;
-- lokalny callback `http://localhost:3000/auth/callback` może pozostać do developmentu.
+- Site URL should point to the production URL;
+- Redirect URLs should include `https://flight-alert-alpha.vercel.app/auth/callback`;
+- the local callback `http://localhost:3000/auth/callback` can remain for development.
 
-Po zmianie publicznych zmiennych środowiskowych lub ikon potrzebny jest nowy deployment Vercel. Zainstalowana PWA aktualizuje service worker po ponownym otwarciu aplikacji.
+A new Vercel deployment is required after changing public environment variables or icons. The installed PWA updates its service worker when the application is reopened.
 
-## 13. Testowanie i kryteria odbioru
+## 13. Testing and acceptance criteria
 
-Polecenia:
+Commands:
 
 ```bash
 pnpm lint
@@ -337,38 +335,41 @@ pnpm e2emobile
 pnpm e2elive
 ```
 
-Polecenie `pnpm airports` odświeża commitowany katalog lotnisk z OurAirports i nie jest wykonywane podczas buildu ani działania produkcji.
+The `pnpm airports` command refreshes the committed airport catalog from OurAirports and does not run during builds or in production.
 
-`pnpm e2elive` loguje się prawdziwym kontem testowym, sprawdza uwierzytelnianie, tworzy alert, uruchamia rzeczywisty skan SerpApi, sprawdza zapis ceny i linku oferty, edytuje oraz przełącza alert, testuje PWA i sprząta utworzone dane. Hasło testowe jest przywracane w bloku końcowym.
+`pnpm build` and Playwright tests must run sequentially: Next.js and Vinext, which is used by the tests, generate route types in the same `.next/types` directory.
 
-Ostatnia weryfikacja bieżącego repozytorium:
+`pnpm e2elive` logs in with a real test account, checks authentication, creates an alert, runs a real SerpApi scan, verifies that the price and offer link were saved, edits and toggles the alert, tests the PWA, and cleans up the data it created. The test password is restored in the final cleanup block.
 
-- lint: zaliczony;
-- produkcyjny build Next.js: zaliczony;
-- Playwright mobile: 7/7 testów zaliczonych;
-- Playwright mobile + desktop: 14/14 testów zaliczonych, w tym wyszukiwanie lotnisk po mieście i państwie, ręczny kod IATA, obsługa klawiatury, dialogu usuwania, zoomu i ograniczenia ruchu;
-- live smoke: 11 zaliczonych, 0 błędów, 1 punkt zablokowany przez ograniczenie Web Push w headless Chromium;
-- fizyczne dostarczenie i otwarcie Web Push: potwierdzone manualnie;
-- migracja `0002_offer_details.sql`: potwierdzona w Supabase;
-- dane utworzone przez test live: usunięte.
+Most recent verification of the current repository:
 
-## 14. Znane ograniczenia
+- lint: passed;
+- production Next.js build: passed;
+- Playwright mobile: 7/7 tests passed;
+- Playwright mobile + desktop: 14/14 tests passed, including airport search by city and country, manual IATA codes, keyboard and delete dialog support, zoom, and reduced motion;
+- alert card headings: airport captions, width constrained to the IATA code, and a centered green airplane verified at viewport widths of 320, 412, and 1440 px; no horizontal overflow;
+- live smoke: 11 passed, 0 errors, 1 check blocked by the Web Push limitation in headless Chromium;
+- actual Web Push delivery and opening: verified manually;
+- migration `0002_offer_details.sql`: confirmed in Supabase;
+- data created by the live test: deleted.
 
-- Bezpośrednia integracja Wizz Air nie istnieje; oferty tej linii zależą od obecności w Google Flights.
-- Publiczny endpoint Ryanair może się zmienić lub blokować automatyczne zapytania.
-- SerpApi podlega limitowi zapytań przypisanemu do konta.
-- Adapter Amadeus nie jest używany w aktywnej konfiguracji.
-- Test dostarczenia Web Push wymaga fizycznej przeglądarki lub zainstalowanej PWA; headless Chromium nie zapewnia prawdziwego endpointu push.
-- Elastyczne daty są rotowane między skanami, a nie przeszukiwane wyczerpująco w jednym uruchomieniu.
-- Katalog lotnisk jest snapshotem aktualizowanym ręcznie. Lotnisko z regularnymi połączeniami, którego nie ma jeszcze w katalogu, można nadal podać przez jawne zatwierdzenie jego kodu IATA.
-- Ostrzeżenie Next.js o przestarzałej konwencji `middleware.ts` nie blokuje kompilacji, ale plik powinien zostać w przyszłości zmigrowany do konwencji `proxy.ts`.
+## 14. Known limitations
 
-## 15. Zasady dalszego rozwoju
+- There is no direct Wizz Air integration; offers from this airline depend on their availability in Google Flights.
+- The public Ryanair endpoint may change or block automated requests.
+- SerpApi is subject to the account's request quota.
+- The Amadeus adapter is not used in the active configuration.
+- Testing Web Push delivery requires a browser on a physical device or an installed PWA; headless Chromium does not provide a real push endpoint.
+- Flexible dates are rotated across scans rather than searched exhaustively in a single run.
+- The airport catalog is a manually updated snapshot. An airport with scheduled service that is not yet in the catalog can still be entered by explicitly confirming its IATA code.
+- The Next.js warning about the deprecated `middleware.ts` convention does not block compilation, but the file should be migrated to the `proxy.ts` convention in the future.
 
-- Zachować architekturę feature-driven oraz RSC/Server Actions.
-- Nie omijać RLS ani kontroli właściciela w operacjach zapisu.
-- Każdą odpowiedź z zewnętrznego API walidować schematem Zod.
-- Awaria pojedynczego alertu lub dostawcy nie może przerwać całego skanu.
-- Nowe funkcje projektować najpierw dla telefonu i weryfikować w projekcie Playwright `mobile-chromium`.
-- Zmiany modelu danych dodawać jako kolejne, idempotentne migracje SQL.
-- Nie zapisywać sekretów ani danych logowania w repozytorium.
+## 15. Guidelines for further development
+
+- Preserve the feature-driven architecture and RSC/Server Actions.
+- Do not bypass RLS or ownership checks in write operations.
+- Validate every external API response with a Zod schema.
+- Failure of a single alert or provider must not interrupt the entire scan.
+- Design new features for phones first and verify them in the Playwright `mobile-chromium` project.
+- Add data model changes as subsequent, idempotent SQL migrations.
+- Do not store secrets or login credentials in the repository.

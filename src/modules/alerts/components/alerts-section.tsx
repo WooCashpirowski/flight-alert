@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { ArrowUpRight, Gauge, LoaderCircle } from 'lucide-react';
+import { ArrowUpRight, Gauge, LoaderCircle, Plane } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toggleAlert } from '@/src/modules/alerts/actions';
@@ -29,7 +29,22 @@ function formatDateRange(departureDate: string, returnDate?: string | null) {
     return `${departure} – ${arrival}`;
 }
 
-export function AlertsSection({ alerts }: { alerts: DashboardAlert[] }) {
+function RouteAirport({ code, label }: { code: string; label: string }) {
+    return (
+        <span className='route-airport'>
+            <span className='route-airport-code'>{code}</span>
+            <span className='route-airport-label'>({label})</span>
+        </span>
+    );
+}
+
+export function AlertsSection({
+    alerts,
+    airportLabels,
+}: {
+    alerts: DashboardAlert[];
+    airportLabels: Record<string, string>;
+}) {
     const router = useRouter();
     const [items, setItems] = useState(alerts);
     const [filter, setFilter] = useState<AlertFilter>('all');
@@ -144,9 +159,15 @@ export function AlertsSection({ alerts }: { alerts: DashboardAlert[] }) {
                                 </button>
                             </div>
                             <h3 className='route-heading'>
-                                <span>{alert.origin}</span>
-                                <i aria-hidden='true'>→</i>
-                                <span>{alert.destination}</span>
+                                <RouteAirport
+                                    code={alert.origin}
+                                    label={airportLabels[alert.origin]}
+                                />
+                                <Plane className='route-plane' aria-hidden='true' />
+                                <RouteAirport
+                                    code={alert.destination}
+                                    label={airportLabels[alert.destination]}
+                                />
                             </h3>
                             {!alert.returnDate && (
                                 <p className='trip-note'>
